@@ -1,0 +1,2 @@
+assets/*.step filter=lfs diff=lfs merge=lfs -text
+assets/no[[:space:]]stem/*.step filter=lfs diff=lfs merge=lfs -text

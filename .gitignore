@@ -1,0 +1,5 @@
+assets/*.FC*
+.claude
+.idea
+.envrc
+results/
