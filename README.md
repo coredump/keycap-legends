@@ -130,6 +130,8 @@ tertiary_font = "Rajdhani"  # Optional override
 
 ## Preparing STEP Files with FreeCAD
 
+> The STEP files in this project were prepared using FreeCAD 1.0 / 1.2 dev version.
+
 If you have a mesh (STL/OBJ) of a keycap and need to convert it to STEP:
 
 1. **Import mesh** - Use the Mesh workbench to import your file
