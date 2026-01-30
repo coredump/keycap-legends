@@ -118,8 +118,8 @@ This project is designed to work with the STEP files in `assets/`, which are scu
 
 **It should be generic enough to work with other keycap STEP files**, but:
 
-1. The STEP file should be a hollow keycap shell (not solid)
-2. The largest internal face is used for legend placement
+1. The STEP file should be a solid keycap body (without stem)
+2. The largest bottom face is used for stem and legend placement
 3. You may need to adjust rotation in `STEP_FILES`
 4. Font sizes and positioning may need tuning
 
