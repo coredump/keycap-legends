@@ -16,7 +16,6 @@ Outputs 3MF files with multi-colored parts (body, legend, stem) ready for multi-
 
 - Python 3.12+
 - [mise](https://mise.jdx.dev/) (optional, for tool management)
-- VS Code with [OCP CAD Viewer](https://marketplace.visualstudio.com/items?itemName=bernhard-42.ocp-cad-viewer) extension (recommended)
 
 ## Setup
 
@@ -66,6 +65,18 @@ This lists all fonts available to build123d for legend text. Useful for finding 
 ```bash
 watchexec -e py -- uv run main.py
 ```
+
+### Visual debugging
+
+The `ocp_vscode` library (included as a dependency) has a standalone viewer mode. To visualize all generated shapes for debugging, replace `show` with `show_all` in `main.py`:
+
+```python
+from ocp_vscode import show_all
+# ... at the end of the script:
+show_all()
+```
+
+This opens a 3D viewer window showing all parts, useful for verifying legend placement and geometry.
 
 ## uv Commands Reference
 
