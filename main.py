@@ -37,68 +37,77 @@ apply_mesher_triangulation_none_guard()
 set_defaults(reset_camera=Camera.CENTER, helper_scale=1, transparent=False)
 
 # font_name: str = "Open Cherry"
-font_name: str = "DIN 1451 Std Engschrift"
-# font_name: str = "Rajdhani"
+# font_name: str = "DIN 1451 Std Engschrift"
+font_name: str = "Rajdhani"
 
 # Legend configuration
 PRIMARY_FONT_SIZE = 8
-SECONDARY_FONT_SIZE = 5
+SECONDARY_FONT_SIZE = 6
+TERTIARY_FONT_SIZE = 5
 LEGEND_GAP = 0.0  # mm gap between top of primary and bottom of secondary
 LEGEND_VERTICAL_SHIFT = 0.0  # mm to shift the whole legend block upward
+TERTIARY_X_OFFSET = -5.0  # mm to shift tertiary legend to the left
 
 # (path, rotation_degrees) - rotation around Z axis before processing
 STEP_FILES = {
     "row_2": ("assets/1u_row_2.step", 0),
-    # "row_2_reachy": ("assets/1u_row_2_left_reachy.step", 90),
-    # "row_3": ("assets/1u_row_3.step", 90),
-    # "row_3_dots": ("assets/1u_row_3_dots.step", 0),
-    # "row_3_reachy": ("assets/1u_row_3_reachy.step", 0),
-    # "row_4": ("assets/1u_row_4.step", 0),
+    "row_2_reachy": ("assets/1u_row_2_left_reachy.step", 0),
+    "row_3": ("assets/1u_row_3.step", 0),
+    "row_3_dots": ("assets/1u_row_3_dots.step", 0),
+    "row_3_reachy": ("assets/1u_row_3_reachy.step", 0),
+    "row_4": ("assets/1u_row_4.step", 0),
     "row_4_reachy": ("assets/1u_row_4_reachy.step", 0),
 }
 
-# (primary_legend, secondary_legend, mirror_x, [primary_font], [secondary_font])
-# - Both set: dual legend with primary at bottom, secondary at top
-# - primary only (secondary=None): single centered primary legend
-# - secondary only (primary=None): single centered secondary legend
-# - mirror_x=True mirrors the base cap on X axis
-# - primary_font (optional): font for primary legend, defaults to font_name
-# - secondary_font (optional): font for secondary legend, defaults to primary_font or font_name
+# (primary, secondary, mirror_x, [primary_font], [secondary_font], [tertiary], [tertiary_font])
+# - primary: main legend at bottom/center
+# - secondary: legend at top/center (or None)
+# - mirror_x: True mirrors the base cap on X axis
+# - primary_font (optional): font for primary, defaults to font_name
+# - secondary_font (optional): font for secondary, defaults to primary_font
+# - tertiary (optional): legend at left side, between primary and secondary
+# - tertiary_font (optional): font for tertiary, defaults to font_name
 LEGENDS = {
     "row_2": [
-        ("q", "`", False),
-        ("w", "<", False),
-        ("e", ">", False),
-        ("r", "-", False),
-        ("u", "{", False),
-        ("i", "}", False),
-        ("o", "$", False),
-        ("p", "\\", False),
+        # ("q", "`", False, font_name, "FantasqueSansM Nerd Font Propo"),
+        # ("w", "\U000f097c", False, font_name, "FantasqueSansM Nerd Font Propo"),
+        # ("e", "\uedfb", False, font_name, "FantasqueSansM Nerd Font Propo"),
+        # ("r", "\ueacc", False, font_name, "FantasqueSansM Nerd Font Propo"),
+        #     ("u", "{", False),
+        #     ("i", "}", False),
+        #     ("o", "$", False),
+        #     ("p", "\\", False),
     ],
-    # "row_2_reachy": [("t", "|", True), ("y", "^", False)],
-    # "row_3": [
-    #     ("a", "!", False),
-    #     ("s", "*", False),
-    #     ("d", "/", False),
-    #     ("k", ")", False),
-    #     ("l", "_", False),
-    #     (";", "'", False),
-    # ],
+    # "row_2_reachy": [("t", "|", False), ("y", "^", True)],
+    "row_3": [
+        # ("a", "!", False),
+        # ("s", "\uf069", False, font_name, "FantasqueSansM Nerd Font Propo"),
+        # ("d", "/", False),
+        # ("k", ")", False),
+        # ("l", "_", False),
+        # (";", "'", False),
+    ],
     # "row_3_dots": [("f", "=", False), ("j", "(", False)],
     # "row_3_reachy": [("g", "&", False), ("h", "#", True)],
-    # "row_4": [
-    #     ("z", "~", False),
-    #     ("x", "+", False),
-    #     ("c", "[", False),
-    #     ("v", "]", False),
-    #     ("m", ":", False),
-    #     (",", None, False),
-    #     (".", None, False),
-    #     ("/", None, False),
-    # ],
+    "row_4": [
+        ("z", "\U000f0725", False, font_name, "FantasqueSansM Nerd Font Propo"),
+        #     ("x", "+", False),
+        #     ("c", "[", False),
+        #     ("v", "]", False),
+        #     ("m", ":", False),
+        #     (",", None, False),
+        #     (".", None, False),
+        #     ("/", None, False),
+    ],
     "row_4_reachy": [
-        ("b", "\uf295", False, font_name, "FantasqueSansM Nerd Font Propo"),
-        ("n", "\uf1fa", True, font_name, "FantasqueSansM Nerd Font Propo"),
+        #     ("b", "\uf295", False, font_name, "FantasqueSansM Nerd Font Propo"),
+        #     (
+        #         "n",
+        #         "\uf1fa",
+        #         True,
+        #         font_name,
+        #         "FantasqueSansM Nerd Font Propo",
+        #     ),
     ],
 }
 
@@ -126,7 +135,8 @@ stem = Box(1.3, 3, 3.1, align=(Align.CENTER, Align.CENTER, Align.MAX)) - [
     Pos(-3.9, 0),
 ] * Cylinder(3.4, 3.1, align=(Align.CENTER, Align.CENTER, Align.MAX))
 stem = fillet(stem.edges().group_by(Axis.Z)[:-1], 0.15)
-choc_stem_base: Part = cross + [Pos(2.85, 0), Pos(-2.85, 0)] * stem
+# cross is used for alignment reference only, not included in final stem
+choc_stem_base: Part = Pos(2.85, 0) * stem + Pos(-2.85, 0) * stem
 
 for row_name, primary_legends in LEGENDS.items():
     print(f"Processing {row_name}...")
@@ -150,15 +160,21 @@ for row_name, primary_legends in LEGENDS.items():
     choc_stem.label = "stem"
 
     for legend_entry in primary_legends:
-        # Unpack with optional font parameters
+        # Unpack with optional font and tertiary parameters
         primary_legend = legend_entry[0]
         secondary_legend = legend_entry[1]
         mirror_x = legend_entry[2]
         primary_font = legend_entry[3] if len(legend_entry) > 3 else font_name
         secondary_font = legend_entry[4] if len(legend_entry) > 4 else primary_font
+        tertiary_legend = legend_entry[5] if len(legend_entry) > 5 else None
+        tertiary_font = legend_entry[6] if len(legend_entry) > 6 else font_name
 
-        if primary_legend and secondary_legend:
+        if primary_legend and secondary_legend and tertiary_legend:
+            legend_desc = f"{primary_legend}+{secondary_legend}+{tertiary_legend}"
+        elif primary_legend and secondary_legend:
             legend_desc = f"{primary_legend}+{secondary_legend}"
+        elif primary_legend and tertiary_legend:
+            legend_desc = f"{primary_legend}+{tertiary_legend}"
         elif primary_legend:
             legend_desc = primary_legend
         elif secondary_legend:
@@ -179,6 +195,8 @@ for row_name, primary_legends in LEGENDS.items():
         else:
             working_cap = cap
             working_stem = choc_stem
+        working_stem.color = Color("gray")
+        working_stem.label = "stem"
 
         text_pln: Plane = Plane(
             origin=pln.origin - n * 0.4, z_dir=pln.z_dir, x_dir=pln.x_dir
@@ -235,6 +253,29 @@ for row_name, primary_legends in LEGENDS.items():
             print("    Combining text solids...")
             text_solid = text_solid + secondary_solid
 
+            # Add tertiary legend if specified (positioned to the left, between primary and secondary)
+            if tertiary_legend:
+                print("    Creating tertiary text...")
+                tertiary_pln = Plane(
+                    origin=text_pln.origin + text_pln.x_dir * TERTIARY_X_OFFSET,
+                    z_dir=text_pln.z_dir,
+                    x_dir=text_pln.x_dir,
+                )
+                with BuildSketch(tertiary_pln) as bs:
+                    Text(
+                        tertiary_legend,
+                        font_size=TERTIARY_FONT_SIZE,
+                        font=tertiary_font,
+                        font_style=FontStyle.BOLD,
+                        align=(Align.CENTER, Align.CENTER),
+                    )
+                print("    Extruding tertiary text...")
+                tertiary_solid = extrude(
+                    bs.sketch, amount=6, dir=text_pln.z_dir, both=False
+                )
+                print("    Combining tertiary text...")
+                text_solid = text_solid + tertiary_solid
+
         elif primary_legend:
             # Only primary - centered on keycap
             print("    Creating primary text (centered)...")
@@ -290,16 +331,15 @@ for row_name, primary_legends in LEGENDS.items():
             print("    Meshed legend")
             m.add_shape(working_stem, linear_deflection=0.06, angular_deflection=0.3)
             print("    Meshed stem")
-            if primary_legend and secondary_legend:
-                safe_primary = FILENAME_MAP.get(primary_legend, primary_legend)
-                safe_secondary = FILENAME_MAP.get(secondary_legend, secondary_legend)
-                filename = f"results/K_{safe_primary}_{safe_secondary}_{row_name}.3mf"
-            elif primary_legend:
-                safe_primary = FILENAME_MAP.get(primary_legend, primary_legend)
-                filename = f"results/K_{safe_primary}_{row_name}.3mf"
-            else:
-                safe_secondary = FILENAME_MAP.get(secondary_legend, secondary_legend)
-                filename = f"results/K_{safe_secondary}_{row_name}.3mf"
+            # Build filename from legends
+            parts = []
+            if primary_legend:
+                parts.append(FILENAME_MAP.get(primary_legend, primary_legend))
+            if secondary_legend:
+                parts.append(FILENAME_MAP.get(secondary_legend, secondary_legend))
+            if tertiary_legend:
+                parts.append(FILENAME_MAP.get(tertiary_legend, tertiary_legend))
+            filename = f"results/K_{'_'.join(parts)}_{row_name}.3mf"
             m.write(filename)
         except RuntimeError as e:
             print(f"    ERROR: Failed to create mesh for '{legend_desc}': {e}")
