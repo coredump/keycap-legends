@@ -1,0 +1,171 @@
+# Keycap Legends Configuration
+
+[settings]
+font = "Rajdhani"
+primary_font_size = 8
+secondary_font_size = 6
+tertiary_font_size = 5
+legend_gap = 0.0
+vertical_shift = 0.0
+tertiary_x_offset = -5.0
+
+# STEP file sources
+# Each entry maps a row name to a path and optional rotation (degrees)
+[step_files.row_2]
+path = "assets/1u_row_2.step"
+
+[step_files.row_2_reachy]
+path = "assets/1u_row_2_left_reachy.step"
+
+[step_files.row_3]
+path = "assets/1u_row_3.step"
+
+[step_files.row_3_dots]
+path = "assets/1u_row_3_dots.step"
+
+[step_files.row_3_reachy]
+path = "assets/1u_row_3_reachy.step"
+
+[step_files.row_4]
+path = "assets/1u_row_4.step"
+
+[step_files.row_4_reachy]
+path = "assets/1u_row_4_reachy.step"
+
+# Legend definitions by row
+# Each legend entry can have:
+#   primary         - main character (bottom/center)
+#   secondary       - symbol character (top/center)
+#   mirror_x        - mirror keycap on X axis (for reachy keys)
+#   primary_font    - font override for primary
+#   secondary_font  - font override for secondary
+#   tertiary        - third character (left side)
+#   tertiary_font   - font override for tertiary
+
+[[legends.row_2]]
+primary = "q"
+secondary = "`"
+secondary_font = "FantasqueSansM Nerd Font Propo"
+
+[[legends.row_2]]
+primary = "w"
+secondary = "\U000f097c"
+secondary_font = "FantasqueSansM Nerd Font Propo"
+
+[[legends.row_2]]
+primary = "e"
+secondary = "\uedfb"
+secondary_font = "FantasqueSansM Nerd Font Propo"
+
+[[legends.row_2]]
+primary = "r"
+secondary = "\ueacc"
+secondary_font = "FantasqueSansM Nerd Font Propo"
+
+[[legends.row_2]]
+primary = "u"
+secondary = "{"
+
+[[legends.row_2]]
+primary = "i"
+secondary = "}"
+
+[[legends.row_2]]
+primary = "o"
+secondary = "$"
+
+[[legends.row_2]]
+primary = "p"
+secondary = "\\"
+
+[[legends.row_2_reachy]]
+primary = "t"
+secondary = "|"
+
+[[legends.row_2_reachy]]
+primary = "y"
+secondary = "^"
+mirror_x = true
+
+[[legends.row_3]]
+primary = "a"
+secondary = "!"
+
+[[legends.row_3]]
+primary = "s"
+secondary = "\uf069"
+secondary_font = "FantasqueSansM Nerd Font Propo"
+
+[[legends.row_3]]
+primary = "d"
+secondary = "/"
+
+[[legends.row_3]]
+primary = "k"
+secondary = ")"
+
+[[legends.row_3]]
+primary = "l"
+secondary = "_"
+
+[[legends.row_3]]
+primary = ";"
+secondary = "'"
+
+[[legends.row_3_dots]]
+primary = "f"
+secondary = "="
+
+[[legends.row_3_dots]]
+primary = "j"
+secondary = "("
+
+[[legends.row_3_reachy]]
+primary = "g"
+secondary = "&"
+
+[[legends.row_3_reachy]]
+primary = "h"
+secondary = "#"
+mirror_x = true
+
+[[legends.row_4]]
+primary = "z"
+secondary = "\U000f0725"
+secondary_font = "FantasqueSansM Nerd Font Propo"
+
+[[legends.row_4]]
+primary = "x"
+secondary = "+"
+
+[[legends.row_4]]
+primary = "c"
+secondary = "["
+
+[[legends.row_4]]
+primary = "v"
+secondary = "]"
+
+[[legends.row_4]]
+primary = "m"
+secondary = ":"
+
+[[legends.row_4]]
+primary = ","
+
+[[legends.row_4]]
+primary = "."
+
+[[legends.row_4]]
+primary = "/"
+
+[[legends.row_4_reachy]]
+primary = "b"
+secondary = "\uf295"
+secondary_font = "FantasqueSansM Nerd Font Propo"
+
+[[legends.row_4_reachy]]
+primary = "n"
+secondary = "\uf1fa"
+mirror_x = true
+secondary_font = "FantasqueSansM Nerd Font Propo"
