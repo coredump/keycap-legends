@@ -41,6 +41,8 @@ Extended context for AI assistants working on this project.
 
 > **Note:** The included config is for a **3x5 split keyboard** with the author's ZMK keymap symbols.
 
+> **Important:** The Subliminal Contradiction STEP files use **Cherry MX keycap dimensions** (not Choc v1 keycap size) but with **Kailh Choc stems**. This is an intentional design choice for the larger keycap profile on low-profile switches.
+
 This project generates 3D-printable keycaps with:
 1. **Text legends** - Characters carved into the keycap top surface (primary, secondary, and optional tertiary)
 2. **Kailh Choc stems** - Low-profile switch mount geometry
