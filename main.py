@@ -27,15 +27,10 @@ from ocp_vscode import Camera, set_defaults, show
 
 from utils.mesher_patch import apply_mesher_triangulation_none_guard
 
-# print(available_fonts())
-# sys.exit()
-
 apply_mesher_triangulation_none_guard()
 
 set_defaults(reset_camera=Camera.CENTER, helper_scale=1, transparent=False)
 
-# font_name: str = "Open Cherry"
-# font_name: str = "DIN 1451 Std Engschrift"
 font_name: str = "Rajdhani"
 
 # Legend configuration
