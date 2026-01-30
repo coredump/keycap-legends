@@ -128,6 +128,20 @@ tertiary = "1"              # Optional third character
 tertiary_font = "Rajdhani"  # Optional override
 ```
 
+## Preparing STEP Files with FreeCAD
+
+If you have a mesh (STL/OBJ) of a keycap and need to convert it to STEP:
+
+1. **Import mesh** - Use the Mesh workbench to import your file
+2. **Repair mesh** - Use mesh repair tools to fix holes and ensure validity
+3. **Decimate** - Lower the triangle count to reduce complexity
+4. **Convert to shape** - In Part workbench, use "Part > Create shape from mesh"
+5. **Convert to solid** - Use "Part > Convert to solid"
+6. **Simplify** - Use "Edit > Copy > Simplify" to reduce geometry complexity
+7. **Validate** - Use Part workbench check tools to ensure boolean operations will work
+8. **Clean up** - Use Part and Draft workbenches to cut or clean the solid as needed
+9. **Export** - Export as STEP file
+
 ## Using Your Own STEP Files
 
 This project is designed to work with the STEP files in `assets/`, which are sculpted keycap shells from the "Subliminal Contradiction" keycap set.
