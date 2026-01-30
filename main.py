@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 from build123d import (
     Align,
     Axis,

@@ -1,4 +1,4 @@
-# utils/safe_mesher.py
+# SPDX-License-Identifier: MIT
 
 import OCP.TopAbs as ta
 from build123d import Mesher

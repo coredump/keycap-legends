@@ -1,4 +1,4 @@
-# utils/mesher_patch.py
+# SPDX-License-Identifier: MIT
 
 import ctypes
 import math
