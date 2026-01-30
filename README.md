@@ -139,6 +139,21 @@ This project is designed to work with the STEP files in `assets/`, which are scu
 
 **The author can't provide much support for custom STEP files** - you're on your own for debugging CAD geometry issues. Good luck!
 
+## Tips
+
+### Font Selection
+Some fonts work better than others for keycap legends. Fonts with clean, simple geometry produce better results. Recommended fonts to try:
+- **DIN 1451** - Clean industrial look
+- **Open Cherry** - Designed for keycaps
+
+Use `uv run fonts.py` to list all available fonts on your system.
+
+### Troubleshooting Broken Symbols
+Sometimes certain symbols will break the 3MF output or cause meshing errors. If this happens:
+1. **Try a different font size** - Slightly larger or smaller sizes can fix geometry issues
+2. **Use a Nerd Font symbol** - Replace problematic characters with Nerd Font icons (e.g., `\uf069` instead of `*`)
+3. **Simplify the glyph** - Some ornate characters have geometry that doesn't mesh well
+
 ## TODO
 
 - [ ] Add thumb keys
