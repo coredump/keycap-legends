@@ -3,6 +3,8 @@
 Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 
 > **Note:** This project has been vibe coded with [Claude](https://claude.ai) (Anthropic's AI assistant). The code works, but don't expect enterprise-grade polish.
+>
+> The included configuration is for a **3x5 split keyboard layout** with symbols based on the author's personal ZMK keymap. You'll likely want to customize `config.toml` for your own layout and preferences.
 
 ## What It Does
 
