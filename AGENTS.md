@@ -32,7 +32,14 @@ Extended context for AI assistants working on this project.
 - Check `results/` folder for generated 3MF files
 - Meshing errors are caught and logged, script continues to next legend
 
+### Font Tips
+- Some fonts work better than others: **DIN 1451** and **Open Cherry** are recommended
+- If a symbol breaks meshing, try changing font size or using a Nerd Font icon instead
+- Use `uv run fonts.py` to list available fonts
+
 ## Project Overview
+
+> **Note:** The included config is for a **3x5 split keyboard** with the author's ZMK keymap symbols.
 
 This project generates 3D-printable keycaps with:
 1. **Text legends** - Characters carved into the keycap top surface (primary, secondary, and optional tertiary)
