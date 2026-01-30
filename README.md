@@ -90,27 +90,41 @@ uv lock              # Update the lock file
 
 ## Configuration
 
-Edit `main.py` to configure:
+Edit `config.toml` to configure legends and settings. No Python knowledge required!
 
-- `font_name` - Default font for legends
-- `PRIMARY_FONT_SIZE`, `SECONDARY_FONT_SIZE`, `TERTIARY_FONT_SIZE` - Font sizes in mm
-- `LEGEND_GAP` - Gap between primary and secondary legends
-- `STEP_FILES` - Map of row names to STEP file paths and rotation
-- `LEGENDS` - Map of row names to legend tuples
+### Settings
 
-### Legend Tuple Format
-
-```python
-(primary, secondary, mirror_x, [primary_font], [secondary_font], [tertiary], [tertiary_font])
+```toml
+[settings]
+font = "Rajdhani"           # Default font for legends
+primary_font_size = 8       # Main character size (mm)
+secondary_font_size = 6     # Symbol size (mm)
+tertiary_font_size = 5      # Third character size (mm)
+legend_gap = 0.0            # Gap between primary and secondary
+vertical_shift = 0.0        # Shift legend block up/down
+tertiary_x_offset = -5.0    # Tertiary position (negative = left)
 ```
 
-- `primary` - Main character (bottom/center), or `None`
-- `secondary` - Symbol character (top/center), or `None`
-- `mirror_x` - `True` to mirror the keycap on X axis (for reachy keys)
-- `primary_font` - Optional font override for primary
-- `secondary_font` - Optional font override for secondary
-- `tertiary` - Optional third character (left side)
-- `tertiary_font` - Optional font override for tertiary
+### STEP Files
+
+```toml
+[step_files.row_2]
+path = "assets/1u_row_2.step"
+rotation = 0  # Optional, degrees
+```
+
+### Legend Entries
+
+```toml
+[[legends.row_2]]
+primary = "q"
+secondary = "`"
+mirror_x = false            # Optional, for reachy keys
+primary_font = "Rajdhani"   # Optional override
+secondary_font = "FantasqueSansM Nerd Font Propo"  # Optional override
+tertiary = "1"              # Optional third character
+tertiary_font = "Rajdhani"  # Optional override
+```
 
 ## Using Your Own STEP Files
 
