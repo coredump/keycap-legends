@@ -1,3 +1,13 @@
+# License
+
+This project contains two types of content with different licenses:
+
+## Code (MIT License)
+
+All Python code, configuration files, and documentation in this repository
+(excluding the `assets/` directory) are licensed under the MIT License:
+
+```
 MIT License
 
 Copyright (c) 2025 keycap-legends contributors
@@ -19,3 +29,21 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
+
+## Keycap STEP Files (CC BY-NC 4.0)
+
+The STEP files in the `assets/` directory are derived from the **Subliminal
+Contradiction** sculpted keycap set by [pseudoku](https://github.com/pseudoku)
+and are licensed under **Creative Commons Attribution-NonCommercial 4.0
+International (CC BY-NC 4.0)**.
+
+**This means the STEP files (and any 3MF files generated from them):**
+
+- ✅ CAN be shared and adapted
+- ✅ MUST include attribution to pseudoku
+- ❌ CANNOT be used for commercial purposes
+
+Full license: https://creativecommons.org/licenses/by-nc/4.0/
+
+Original source: https://github.com/pseudoku/Subliminal-Contradiction
