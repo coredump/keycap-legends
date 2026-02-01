@@ -14,7 +14,7 @@ Takes STEP files of keycap shells (from FreeCAD) and adds:
 - **Text legends** - Characters carved into the keycap top surface (supports primary, secondary, and tertiary legends)
 - **Kailh Choc stems** - Low-profile switch mount geometry
 
-Outputs 3MF files with multi-colored parts (body, legend, stem) ready for multi-material 3D printing.
+Outputs 3MF files with separate bodies (cap body, legend, stem) that slicers recognize as distinct objects, making multi-material or multi-color printing easy - just assign different filaments to each body in your slicer.
 
 ## Requirements
 
