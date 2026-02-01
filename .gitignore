@@ -3,3 +3,4 @@ assets/*.FC*
 .idea
 .envrc
 results/
+**/__pycache__
