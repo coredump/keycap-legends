@@ -11,6 +11,7 @@ Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 ## Table of Contents
 
 - [What It Does](#what-it-does)
+- [Acknowledgements](#acknowledgements)
 - [Requirements](#requirements)
 - [Setup](#setup)
 - [Usage](#usage)
@@ -20,7 +21,6 @@ Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 - [Using Your Own STEP Files](#using-your-own-step-files)
 - [Tips](#tips)
 - [Printing Tips](#printing-tips)
-- [Acknowledgements](#acknowledgements)
 - [License](#license)
 
 ## What It Does
@@ -30,6 +30,13 @@ Takes STEP files of keycap shells (from FreeCAD) and adds:
 - **Kailh Choc stems** - Low-profile switch mount geometry
 
 Outputs 3MF files with separate bodies (cap body, legend, stem) that slicers recognize as distinct objects, making multi-material or multi-color printing easy - just assign different filaments to each body in your slicer.
+
+## Acknowledgements
+
+This project uses keycap shells from the **Subliminal Contradiction** sculpted keycap set by [pseudoku](https://github.com/pseudoku).
+
+- **GitHub:** [pseudoku/Subliminal-Contradiction](https://github.com/pseudoku/Subliminal-Contradiction)
+- **Store:** If you want professionally cast versions of SC profile keycaps, check out [Asymplex](https://www.asymplex.xyz/product/made-to-order-sc-profile)
 
 ## Requirements
 
@@ -206,13 +213,6 @@ Sometimes certain symbols will break the 3MF output or cause meshing errors. If 
 - **Supports:** Required
 - **Post-processing:** Stems may need light filing for fit (they print tight)
 - **Blank keycaps:** If you want keycaps without visible legends, simply assign the same filament/color to both the cap body and legend in your slicer
-
-## Acknowledgements
-
-This project uses keycap shells from the **Subliminal Contradiction** sculpted keycap set by [pseudoku](https://github.com/pseudoku).
-
-- **GitHub:** [pseudoku/Subliminal-Contradiction](https://github.com/pseudoku/Subliminal-Contradiction)
-- **Store:** If you want professionally cast versions of SC profile keycaps, check out [Asymplex](https://www.asymplex.xyz/product/made-to-order-sc-profile)
 
 ## License
 
