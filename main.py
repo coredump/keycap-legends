@@ -29,6 +29,18 @@ from config import load_config
 from models import LegendEntry
 from utils.mesher_patch import apply_mesher_triangulation_none_guard
 
+# =============================================================================
+# DEBUG SETTINGS - Set to filter which rows to process
+# =============================================================================
+# Set to None or empty list to process all rows
+# Set to a list of row names to process only those rows
+# Examples:
+#   ONLY_ROWS = None                           # Process all rows
+#   ONLY_ROWS = ["row_2"]                      # Process only row_2
+#   ONLY_ROWS = ["thumb_mid", "thumb_corners"] # Process only thumb keys
+ONLY_ROWS: list[str] | None = None
+# =============================================================================
+
 # Characters that need safe filenames
 FILENAME_MAP: dict[str, str] = {
     "<": "less",
@@ -94,6 +106,11 @@ def main() -> None:
     choc_stem_base: Part = build_choc_stem()
 
     for row_name, legend_entries in cfg.legends.items():
+        # Skip rows not in ONLY_ROWS filter (if set)
+        if ONLY_ROWS and row_name not in ONLY_ROWS:
+            print(f"Skipping {row_name} (not in ONLY_ROWS)")
+            continue
+
         print(f"Processing {row_name}...")
 
         # Get STEP file config
@@ -292,7 +309,9 @@ def main() -> None:
                 print("    Meshed hole_cap")
                 m.add_shape(legend, linear_deflection=0.01, angular_deflection=0.05)
                 print("    Meshed legend")
-                m.add_shape(working_stem, linear_deflection=0.06, angular_deflection=0.3)
+                m.add_shape(
+                    working_stem, linear_deflection=0.06, angular_deflection=0.3
+                )
                 print("    Meshed stem")
                 filename = build_filename(entry, row_name)
                 m.write(filename)

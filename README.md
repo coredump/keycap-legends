@@ -82,6 +82,16 @@ show_all()
 
 This opens a 3D viewer window showing all parts, useful for verifying legend placement and geometry.
 
+### Process only specific rows
+
+To debug specific rows without processing everything, edit `ONLY_ROWS` in `main.py`:
+
+```python
+ONLY_ROWS = None                           # Process all rows
+ONLY_ROWS = ["row_2"]                      # Process only row_2
+ONLY_ROWS = ["thumb_mid", "thumb_corners"] # Process only thumb keys
+```
+
 ## uv Commands Reference
 
 ```bash
@@ -174,9 +184,16 @@ Sometimes certain symbols will break the 3MF output or cause meshing errors. If 
 2. **Use a Nerd Font symbol** - Replace problematic characters with Nerd Font icons (e.g., `\uf069` instead of `*`)
 3. **Simplify the glyph** - Some ornate characters have geometry that doesn't mesh well
 
+## Printing Tips
+
+- **Material:** PLA works well
+- **Orientation:** 45° angle recommended
+- **Supports:** Required
+- **Post-processing:** Stems may need light filing for fit (they print tight)
+
 ## TODO
 
-- [ ] Add thumb keys
+- [x] Add thumb keys
 
 ## License
 

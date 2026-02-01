@@ -32,6 +32,12 @@ path = "assets/1u_row_4.step"
 [step_files.row_4_reachy]
 path = "assets/1u_row_4_reachy.step"
 
+[step_files.thumb_mid]
+path = "assets/1u_convex_dot.step"
+
+[step_files.thumb_corners]
+path = "assets/1u_convex_slanted_right.step"
+
 # Legend definitions by row
 # Each legend entry can have:
 #   primary         - main character (bottom/center)
@@ -169,3 +175,39 @@ primary = "n"
 secondary = "\uf1fa"
 mirror_x = true
 secondary_font = "FantasqueSansM Nerd Font Propo"
+
+[[legends.thumb_mid]]
+primary = "\U000f0312"
+secondary = "\uf102"
+primary_font = "FantasqueSansM Nerd Font Propo"
+secondary_font = "FantasqueSansM Nerd Font Propo"
+
+[[legends.thumb_mid]]
+primary = "\U000f030d"
+secondary = "\uf103"
+primary_font = "FantasqueSansM Nerd Font Propo"
+secondary_font = "FantasqueSansM Nerd Font Propo"
+
+# Num, left side left key
+[[legends.thumb_corners]]
+primary = "\U000f03a0"
+mirror_x = true
+primary_font = "FantasqueSansM Nerd Font Propo"
+
+# enter,  left side right key
+[[legends.thumb_corners]]
+primary = "\U000f0311"
+mirror_x = false
+primary_font = "FantasqueSansM Nerd Font Propo"
+
+# enter, nav, left side right key
+[[legends.thumb_corners]]
+primary = "\U000f1050"
+mirror_x = true
+primary_font = "FantasqueSansM Nerd Font Propo"
+
+[[legends.thumb_corners]]
+primary = "\U000f0636"
+mirror_x = false
+primary_font = "FantasqueSansM Nerd Font Propo"
+
