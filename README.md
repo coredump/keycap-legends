@@ -8,6 +8,21 @@ Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 >
 > The Subliminal Contradiction STEP files use **Cherry MX keycap dimensions** (not Choc v1 size) with **Kailh Choc stems** - larger keycap profile on low-profile switches.
 
+## Table of Contents
+
+- [What It Does](#what-it-does)
+- [Requirements](#requirements)
+- [Setup](#setup)
+- [Usage](#usage)
+- [uv Commands Reference](#uv-commands-reference)
+- [Configuration](#configuration)
+- [Preparing STEP Files with FreeCAD](#preparing-step-files-with-freecad)
+- [Using Your Own STEP Files](#using-your-own-step-files)
+- [Tips](#tips)
+- [Printing Tips](#printing-tips)
+- [Acknowledgements](#acknowledgements)
+- [License](#license)
+
 ## What It Does
 
 Takes STEP files of keycap shells (from FreeCAD) and adds:
