@@ -38,6 +38,8 @@ This project uses keycap shells from the **Subliminal Contradiction** sculpted k
 - **GitHub:** [pseudoku/Subliminal-Contradiction](https://github.com/pseudoku/Subliminal-Contradiction)
 - **Store:** If you want professionally cast versions of SC profile keycaps, check out [Asymplex](https://www.asymplex.xyz/product/made-to-order-sc-profile)
 
+> ⚠️ **License Note:** The STEP files in `assets/` are licensed under **CC BY-NC 4.0** (NonCommercial). You may NOT use the keycap designs or generated 3MF files for commercial purposes. See [LICENSE](LICENSE) for details.
+
 ## Requirements
 
 - Python 3.12+
@@ -216,4 +218,8 @@ Sometimes certain symbols will break the 3MF output or cause meshing errors. If 
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file.
+**Dual-licensed:**
+- **Code** (Python, config, docs): [MIT License](LICENSE)
+- **STEP files** in `assets/`: [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) (NonCommercial)
+
+See [LICENSE](LICENSE) for full details.
