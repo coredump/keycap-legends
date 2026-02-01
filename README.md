@@ -207,10 +207,6 @@ Sometimes certain symbols will break the 3MF output or cause meshing errors. If 
 - **Post-processing:** Stems may need light filing for fit (they print tight)
 - **Blank keycaps:** If you want keycaps without visible legends, simply assign the same filament/color to both the cap body and legend in your slicer
 
-## TODO
-
-- [x] Add thumb keys
-
 ## Acknowledgements
 
 This project uses keycap shells from the **Subliminal Contradiction** sculpted keycap set by [pseudoku](https://github.com/pseudoku).
