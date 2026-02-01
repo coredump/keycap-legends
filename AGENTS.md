@@ -31,6 +31,7 @@ Extended context for AI assistants working on this project.
 - Visual output via ocp-vscode standalone viewer or `show_all()`
 - Check `results/` folder for generated 3MF files
 - Meshing errors are caught and logged, script continues to next legend
+- Use `ONLY_ROWS` in main.py to process specific rows only (e.g., `ONLY_ROWS = ["thumb_mid"]`)
 
 ### Font Tips
 - Some fonts work better than others: **DIN 1451** and **Open Cherry** are recommended
