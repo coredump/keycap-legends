@@ -5,10 +5,10 @@ description = "Adds legends and choc stems to the subliminal contradiction sculp
 requires-python = ">=3.12"
 dependencies = [
     "build123d>=0.10.0",
-    "ocp-vscode>=3.0.1",
 ]
 
 [dependency-groups]
 dev = [
     "ruff>=0.14.14",
+    "ocp-vscode>=3.0.1",
 ]

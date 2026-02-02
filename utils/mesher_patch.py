@@ -67,7 +67,7 @@ def _find_boundary_loops(triangles_indices):
 
 def _fill_loop_with_fan(loop):
     """Fill a boundary loop with fan triangulation.
-    
+
     The loop contains boundary edges in order. For a proper mesh, fill triangles
     must have edges in the OPPOSITE direction of the boundary edges.
     Boundary edges go loop[i] -> loop[i+1], so fill triangles need reversed winding.
