@@ -4,11 +4,14 @@ Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 
 ![Keycaps on keyboard](assets/images/hero.jpg)
 
-> **Note:** This project has been vibe coded with [Claude](https://claude.ai) (Anthropic's AI assistant). The code works, but don't expect enterprise-grade polish.
+> **Note:** This project has been vibe coded with [Claude](https://claude.ai) (Anthropic's AI assistant). The code
+> works, but don't expect enterprise-grade polish.
 >
-> The included configuration is for a **3x5 split keyboard layout** with symbols based on the author's personal ZMK keymap. You'll likely want to customize `config.toml` for your own layout and preferences.
+> The included configuration is for a **3x5 split keyboard layout** with symbols based on the author's personal ZMK
+> keymap. You'll likely want to customize `config.toml` for your own layout and preferences.
 >
-> The Subliminal Contradiction STEP files use **Cherry MX keycap dimensions** (not Choc v1 size) with **Kailh Choc stems** - larger keycap profile on low-profile switches.
+> The Subliminal Contradiction STEP files use **Cherry MX keycap dimensions** (not Choc v1 size) with **Kailh Choc stems
+** - larger keycap profile on low-profile switches.
 
 ## Table of Contents
 
@@ -28,21 +31,26 @@ Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 ## What It Does
 
 Takes STEP files of keycap shells (from FreeCAD) and adds:
+
 - **Text legends** - Characters carved into the keycap top surface (supports primary, secondary, and tertiary legends)
 - **Kailh Choc stems** - Low-profile switch mount geometry
 
-Outputs 3MF files with separate bodies (cap body, legend, stem) that slicers recognize as distinct objects, making multi-material or multi-color printing easy - just assign different filaments to each body in your slicer.
+Outputs 3MF files with separate bodies (cap body, legend, stem) that slicers recognize as distinct objects, making
+multi-material or multi-color printing easy - just assign different filaments to each body in your slicer.
 
-![3D preview showing cap body, legend, and stem](assets/images/3d-preview.png)
+![3D preview showing cap body, and legend](assets/images/3d-preview.png)
 
 ## Acknowledgements
 
-This project uses keycap shells from the **Subliminal Contradiction** sculpted keycap set by [pseudoku](https://github.com/pseudoku).
+This project uses keycap shells from the **Subliminal Contradiction** sculpted keycap set
+by [pseudoku](https://github.com/pseudoku).
 
 - **GitHub:** [pseudoku/Subliminal-Contradiction](https://github.com/pseudoku/Subliminal-Contradiction)
-- **Store:** If you want professionally cast versions of SC profile keycaps, check out [Asymplex](https://www.asymplex.xyz/product/made-to-order-sc-profile)
+- **Store:** If you want professionally cast versions of SC profile keycaps, check
+  out [Asymplex](https://www.asymplex.xyz/product/made-to-order-sc-profile)
 
-> ⚠️ **License Note:** The STEP files in `assets/` are licensed under **CC BY-NC 4.0** (NonCommercial). You may NOT use the keycap designs or generated 3MF files for commercial purposes. See [LICENSE](LICENSE) for details.
+> ⚠️ **License Note:** The STEP files in `assets/` are licensed under **CC BY-NC 4.0** (NonCommercial). You may NOT use
+> the keycap designs or generated 3MF files for commercial purposes. See [LICENSE](LICENSE) for details.
 
 ## Requirements
 
@@ -100,10 +108,12 @@ watchexec -e py -- uv run main.py
 
 ### Visual debugging
 
-The `ocp_vscode` library (included as a dependency) has a standalone viewer mode. To visualize all generated shapes for debugging, replace `show` with `show_all` in `main.py`:
+The `ocp_vscode` library (included as a dependency) has a standalone viewer mode. To visualize all generated shapes for
+debugging, replace `show` with `show_all` in `main.py`:
 
 ```python
 from ocp_vscode import show_all
+
 # ... at the end of the script:
 show_all()
 ```
@@ -115,9 +125,9 @@ This opens a 3D viewer window showing all parts, useful for verifying legend pla
 To debug specific rows without processing everything, edit `ONLY_ROWS` in `main.py`:
 
 ```python
-ONLY_ROWS = None                           # Process all rows
-ONLY_ROWS = ["row_2"]                      # Process only row_2
-ONLY_ROWS = ["thumb_mid", "thumb_corners"] # Process only thumb keys
+ONLY_ROWS = None  # Process all rows
+ONLY_ROWS = ["row_2"]  # Process only row_2
+ONLY_ROWS = ["thumb_mid", "thumb_corners"]  # Process only thumb keys
 ```
 
 ## uv Commands Reference
@@ -186,7 +196,8 @@ If you have a mesh (STL/OBJ) of a keycap and need to convert it to STEP:
 
 ## Using Your Own STEP Files
 
-This project is designed to work with the STEP files in `assets/`, which are sculpted keycap shells from the "Subliminal Contradiction" keycap set.
+This project is designed to work with the STEP files in `assets/`, which are sculpted keycap shells from the "Subliminal
+Contradiction" keycap set.
 
 **It should be generic enough to work with other keycap STEP files**, but:
 
@@ -195,36 +206,46 @@ This project is designed to work with the STEP files in `assets/`, which are scu
 3. You may need to adjust rotation in `STEP_FILES`
 4. Font sizes and positioning may need tuning
 
-**The author can't provide much support for custom STEP files** - you're on your own for debugging CAD geometry issues. Good luck!
+**The author can't provide much support for custom STEP files** - you're on your own for debugging CAD geometry issues.
+Good luck!
 
 ## Tips
 
 ### Font Selection
-Some fonts work better than others for keycap legends. Fonts with clean, simple geometry produce better results. Recommended fonts to try:
+
+Some fonts work better than others for keycap legends. Fonts with clean, simple geometry produce better results.
+Recommended fonts to try:
+
 - **DIN 1451** - Clean industrial look
 - **Open Cherry** - Designed for keycaps
 
 Use `uv run fonts.py` to list all available fonts on your system.
 
 ### Troubleshooting Broken Symbols
+
 Sometimes certain symbols will break the 3MF output or cause meshing errors. If this happens:
+
 1. **Try a different font size** - Slightly larger or smaller sizes can fix geometry issues
 2. **Use a Nerd Font symbol** - Replace problematic characters with Nerd Font icons (e.g., `\uf069` instead of `*`)
 3. **Simplify the glyph** - Some ornate characters have geometry that doesn't mesh well
 
 ## Printing Tips
 
-![Printed keycap close-up](assets/images/print-result.jpg)
+![Printed keycap close-up](assets/images/closeup.png)
 
 - **Material:** PLA works well
-- **Orientation:** 45° angle recommended
+- **Orientation:** 45° angle on the side recommended
+- **Spacing:** getting some space around each key gives the print more travel time and can help with pieces detaching
+  from the bed
 - **Supports:** Required
 - **Post-processing:** Stems may need light filing for fit (they print tight)
-- **Blank keycaps:** If you want keycaps without visible legends, simply assign the same filament/color to both the cap body and legend in your slicer
+- **Blank keycaps:** If you want keycaps without visible legends, simply assign the same filament/color to both the cap
+  body and legend in your slicer
 
 ## License
 
 **Dual-licensed:**
+
 - **Code** (Python, config, docs): [MIT License](LICENSE)
 - **STEP files** in `assets/`: [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) (NonCommercial)
 
