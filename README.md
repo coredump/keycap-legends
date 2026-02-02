@@ -2,6 +2,8 @@
 
 Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 
+![Keycaps on keyboard](assets/images/hero.jpg)
+
 > **Note:** This project has been vibe coded with [Claude](https://claude.ai) (Anthropic's AI assistant). The code works, but don't expect enterprise-grade polish.
 >
 > The included configuration is for a **3x5 split keyboard layout** with symbols based on the author's personal ZMK keymap. You'll likely want to customize `config.toml` for your own layout and preferences.
@@ -30,6 +32,8 @@ Takes STEP files of keycap shells (from FreeCAD) and adds:
 - **Kailh Choc stems** - Low-profile switch mount geometry
 
 Outputs 3MF files with separate bodies (cap body, legend, stem) that slicers recognize as distinct objects, making multi-material or multi-color printing easy - just assign different filaments to each body in your slicer.
+
+![3D preview showing cap body, legend, and stem](assets/images/3d-preview.png)
 
 ## Acknowledgements
 
@@ -209,6 +213,8 @@ Sometimes certain symbols will break the 3MF output or cause meshing errors. If 
 3. **Simplify the glyph** - Some ornate characters have geometry that doesn't mesh well
 
 ## Printing Tips
+
+![Printed keycap close-up](assets/images/print-result.jpg)
 
 - **Material:** PLA works well
 - **Orientation:** 45° angle recommended
