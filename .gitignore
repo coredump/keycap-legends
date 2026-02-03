@@ -1,4 +1,5 @@
 assets/*.FC*
+.serena
 .claude
 .idea
 .envrc

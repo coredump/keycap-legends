@@ -177,13 +177,13 @@ mirror_x = true
 secondary_font = "FantasqueSansM Nerd Font Propo"
 
 [[legends.thumb_mid]]
-primary = "\U000f0312"
+primary = "\U000f030d"
 secondary = "\uf102"
 primary_font = "FantasqueSansM Nerd Font Propo"
 secondary_font = "FantasqueSansM Nerd Font Propo"
 
 [[legends.thumb_mid]]
-primary = "\U000f030d"
+primary = "\U000f0312"
 secondary = "\uf103"
 primary_font = "FantasqueSansM Nerd Font Propo"
 secondary_font = "FantasqueSansM Nerd Font Propo"

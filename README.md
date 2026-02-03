@@ -2,13 +2,14 @@
 
 Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 
-![Keycaps on keyboard](assets/images/hero.jpg)
+![Subliminal Contradiction Keycaps on keyboard](assets/images/hero.jpg)
 
 > **Note:** This project has been vibe coded with [Claude](https://claude.ai) (Anthropic's AI assistant). The code
 > works, but don't expect enterprise-grade polish.
 >
 > The included configuration is for a **3x5 split keyboard layout** with symbols based on the author's
-> [ZMK keymap](https://github.com/coredump/zmk-config/). You'll likely want to customize `config.toml` for your own layout and preferences.
+> [ZMK keymap](https://github.com/coredump/zmk-config/). You'll likely want to customize `config.toml` for your own
+> layout and preferences.
 >
 > The Subliminal Contradiction STEP files use **Cherry MX keycap dimensions** (not Choc v1 size) with **Kailh Choc stems
 ** - larger keycap profile on low-profile switches.
