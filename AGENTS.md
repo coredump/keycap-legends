@@ -2,38 +2,46 @@
 
 Extended context for AI assistants working on this project.
 
-## Claude Agent Guidelines
+## AI Assistant Guidelines
 
 ### Session Context
+
 - This is a build123d CAD project - read this file fully before making changes
 - The mesher_patch.py fixes critical bugs; don't remove or modify unless necessary
 - Always run `uv run main.py` to test changes (user will confirm when to run)
 
 ### Code Style Preferences
+
 - Use type annotations (Python 3.12 supports `str | None` and `list[str]` natively)
 - Add `# type: ignore[assignment]` for build123d API mismatches (returns Compound, not Part)
 - Use dataclasses for structured configuration (see models.py)
 - Use FontStyle.BOLD for legend text
 
 ### Common Pitfalls to Avoid
+
 1. **Mirror timing**: Always mirror cap/stem BEFORE boolean operations, not after
 2. **Plane rotation**: Use fixed `x_dir=Vector(1, 0, 0)` to prevent legend rotating with cap
 3. **Legend extraction**: Use intersection (`&`) not subtraction for extracting legend solid
 4. **Filtering solids**: Use `max()` by volume for hole_cap (largest), but boolean results may be ShapeList or Solid
+5. **Two separate planes**: Stem plane (from largest bottom face) and legend plane (from `find_legend_plane_z()`) are
+   independent - don't conflate them
 
 ### When Modifying Configuration
+
 - Edit `config.toml` for legends, STEP files, and settings - no Python needed
 - Edit `models.py` to add new dataclass fields
 - Edit `config.py` to handle new TOML fields
 - Nerd Font icons use unicode escapes like `"\uf069"` or `"\U000f0725"` in TOML
 
 ### Testing Changes
+
 - Visual output via ocp-vscode standalone viewer or `show_all()`
 - Check `results/` folder for generated 3MF files
 - Meshing errors are caught and logged, script continues to next legend
 - Use `ONLY_ROWS` in main.py to process specific rows only (e.g., `ONLY_ROWS = ["thumb_mid"]`)
 
 ### Font Tips
+
 - Some fonts work better than others: **DIN 1451** and **Open Cherry** are recommended
 - If a symbol breaks meshing, try changing font size or using a Nerd Font icon instead
 - Use `uv run fonts.py` to list available fonts
@@ -42,9 +50,12 @@ Extended context for AI assistants working on this project.
 
 > **Note:** The included config is for a **3x5 split keyboard** with the author's ZMK keymap symbols.
 
-> **Important:** The Subliminal Contradiction STEP files use **Cherry MX keycap dimensions** (not Choc v1 keycap size) but with **Kailh Choc stems**. This is an intentional design choice for the larger keycap profile on low-profile switches.
+> **Important:** The Subliminal Contradiction STEP files use **Cherry MX keycap dimensions** (not Choc v1 keycap size)
+> but with **Kailh Choc stems**. This is an intentional design choice for the larger keycap profile on low-profile
+> switches.
 
 This project generates 3D-printable keycaps with:
+
 1. **Text legends** - Characters carved into the keycap top surface (primary, secondary, and optional tertiary)
 2. **Kailh Choc stems** - Low-profile switch mount geometry
 
@@ -72,47 +83,52 @@ keycap_legends/
 ### Module Responsibilities
 
 - **models.py**: Dataclasses for type-safe configuration
-  - `LegendEntry` - single legend configuration
-  - `StepFileConfig` - STEP file path and rotation
-  - `LegendSettings` - font sizes, gaps, offsets
-  - `Config` - complete configuration container
+    - `LegendEntry` - single legend configuration
+    - `StepFileConfig` - STEP file path, rotation, and `has_stem` flag
+    - `LegendSettings` - font sizes, gaps, offsets
+    - `Config` - complete configuration container
 
 - **config.py**: Loads and parses `config.toml` into dataclasses
 
 - **main.py**: Processing logic
-  - `build_choc_stem()` - creates stem geometry
-  - `build_legend_desc()` - generates description string
-  - `build_filename()` - creates safe output filename
-  - `main()` - entry point, orchestrates generation
+    - `build_choc_stem()` - creates stem geometry
+    - `build_legend_desc()` - generates description string
+    - `build_filename()` - creates safe output filename
+    - `find_legend_plane_z()` - finds Z coordinate for legend placement (lowest point on top surface near center)
+    - `main()` - entry point, orchestrates generation
 
 ### main.py Workflow
 
 1. Load configuration from `config.toml`
 2. Build Choc stem geometry once
 3. For each row in legends:
-   - Load STEP file and apply rotation
-   - Center at origin
-   - Find largest face for placement plane
+    - Load STEP file and apply rotation
+    - Center at origin
+    - Find **stem plane**: largest bottom face (for Choc stem positioning)
+    - Find **legend plane**: lowest point on top surface near center (via `find_legend_plane_z()`)
+    - Create Choc stem if `has_stem = false` (default)
 4. For each legend entry:
-   - Mirror cap/stem if needed (BEFORE boolean ops)
-   - Create text solids
-   - Boolean subtract/intersect
-   - Export as 3MF
+    - Mirror cap/stem if needed (BEFORE boolean ops)
+    - Create text solids on legend plane
+    - Boolean subtract/intersect
+    - Export as 3MF (stem omitted if `has_stem = true`)
 
 ### Mesher Patch (utils/mesher_patch.py)
 
 Fixes two bugs in build123d's Mesher class:
 
-1. **Null triangulation** - OCCT's `BRep_Tool.Triangulation_s()` can return `None` for some faces. The patch skips these instead of crashing on `NbNodes()`.
+1. **Null triangulation** - OCCT's `BRep_Tool.Triangulation_s()` can return `None` for some faces. The patch skips these
+   instead of crashing on `NbNodes()`.
 
 2. **Boundary holes** - Vertex merging during 3MF creation can collapse triangles, leaving holes. The patch:
-   - Detects boundary edges (edges in only one triangle)
-   - Traces closed loops
-   - Fills with fan triangulation
+    - Detects boundary edges (edges in only one triangle)
+    - Traces closed loops
+    - Fills with fan triangulation
 
 ## Configuration (config.toml)
 
 ### Settings
+
 ```toml
 [settings]
 font = "Rajdhani"
@@ -125,13 +141,16 @@ tertiary_x_offset = -5.0
 ```
 
 ### STEP Files
+
 ```toml
 [step_files.row_2]
 path = "assets/1u_row_2.step"
-rotation = 0  # Optional
+rotation = 0     # Optional, degrees
+has_stem = true  # Optional, skip stem generation if STEP already has stem
 ```
 
 ### Legends
+
 ```toml
 [[legends.row_2]]
 primary = "q"
@@ -171,7 +190,9 @@ mirrored_cap = mirror(cap, Plane.YZ)
 ## Common Tasks
 
 ### Add a new legend
+
 Add entry to `config.toml`:
+
 ```toml
 [[legends.row_2]]
 primary = "x"
@@ -179,7 +200,9 @@ secondary = "+"
 ```
 
 ### Use a different keycap base
+
 Add to `config.toml`:
+
 ```toml
 [step_files.my_row]
 path = "assets/my_keycap.step"
@@ -187,9 +210,11 @@ rotation = 90
 ```
 
 ### Adjust text size
+
 Edit `[settings]` in `config.toml`.
 
 ### Use custom font for a character
+
 ```toml
 [[legends.row_2]]
 primary = "q"
@@ -216,9 +241,17 @@ secondary_font = "FantasqueSansM Nerd Font Propo"
 - Uses `uv` for dependency management
 - Run with: `uv run main.py`
 
+### Mise Tasks
+
+Available tasks via `mise run`:
+
+- `mise run run` - Run the main keycap generation script (`uv run main.py`)
+- `mise run run_ocp` - Launch the OCP-VSCode standalone viewer (`uv run -m ocp_vscode`)
+
 ## Filename Mapping
 
 Special characters are mapped to safe filenames in `FILENAME_MAP` (main.py):
+
 ```python
 FILENAME_MAP = {
     "<": "less", ">": "greater", "/": "slash", ":": "colon",
@@ -226,4 +259,5 @@ FILENAME_MAP = {
     "*": "asterisk", '"': "quote",
 }
 ```
+
 Output format: `results/K_{primary}_{secondary}_{row_name}.3mf`
