@@ -22,6 +22,7 @@ class StepFileConfig:
 
     path: str
     rotation: int = 0
+    has_stem: bool = False
 
 
 @dataclass

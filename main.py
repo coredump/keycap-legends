@@ -3,6 +3,7 @@
 from build123d import (
     Align,
     Axis,
+    BoundBox,
     Box,
     BuildSketch,
     Color,
@@ -37,8 +38,8 @@ from utils.mesher_patch import apply_mesher_triangulation_none_guard
 # Examples:
 #   ONLY_ROWS = None                           # Process all rows
 #   ONLY_ROWS = ["row_2"]                      # Process only row_2
-#   ONLY_ROWS = ["thumb_mid", "thumb_corners"] # Process only thumb keys
-ONLY_ROWS: list[str] | None = None
+ONLY_ROWS = ["thumb_mid", "thumb_corners"]  # Process only thumb keys
+# ONLY_ROWS: list[str] | None = None
 # =============================================================================
 
 # Characters that need safe filenames
@@ -93,6 +94,38 @@ def build_filename(entry: LegendEntry, row_name: str) -> str:
     return f"results/K_{'_'.join(parts)}_{row_name}.3mf"
 
 
+def find_legend_plane_z(cap: Part, bbox: BoundBox) -> float:
+    """Find the Z coordinate for legend placement.
+
+    Returns the minimum Z among vertices that are:
+    1. Near the keycap center (X, Y within radius)
+    2. In the upper portion of the keycap (top 60% by height)
+
+    This ensures legends start below the surface for all keycap profiles
+    (concave, convex, or flat).
+    """
+    cap_top_z = bbox.max.Z
+    cap_bottom_z = bbox.min.Z
+    cap_height = cap_top_z - cap_bottom_z
+
+    # Only consider upper portion (top 60%)
+    z_threshold = cap_bottom_z + cap_height * 0.4
+    center_radius = 3.0  # mm
+
+    candidate_z_values: list[float] = []
+    for vertex in cap.vertices():
+        v = vertex.center()
+        if abs(v.X) < center_radius and abs(v.Y) < center_radius:
+            if v.Z > z_threshold:
+                candidate_z_values.append(v.Z)
+
+    if candidate_z_values:
+        return min(candidate_z_values)
+
+    # Fallback
+    return cap_top_z
+
+
 def main() -> None:
     """Main entry point for keycap generation."""
     apply_mesher_triangulation_none_guard()
@@ -120,19 +153,31 @@ def main() -> None:
             cap = Rot(0, 0, step_cfg.rotation) * cap
         bbox = cap.bounding_box()
         cap = Pos(-bbox.center().X, -bbox.center().Y, -bbox.min.Z) * cap
+        # Update bbox after repositioning
+        bbox = cap.bounding_box()
 
+        # Stem plane: based on largest face (inside bottom of keycap)
         internal_face = max(cap.faces(), key=lambda f: f.area)
         n: Vector = internal_face.normal_at()
-        # Use fixed x_dir so legend/stem orientation doesn't change with cap rotation
         pln: Plane = Plane(
             origin=Vector(0, 0, internal_face.center().Z),
             z_dir=-n,
             x_dir=Vector(1, 0, 0),
         )
 
-        choc_stem: Part = pln.location * choc_stem_base
-        choc_stem.color = Color("gray")
-        choc_stem.label = "stem"
+        choc_stem: Part | None = None
+        if not step_cfg.has_stem:
+            choc_stem = pln.location * choc_stem_base
+            choc_stem.color = Color("gray")
+            choc_stem.label = "stem"
+
+        # Legend plane: based on lowest point of top surface near center
+        legend_z = find_legend_plane_z(cap, bbox)
+        text_pln: Plane = Plane(
+            origin=Vector(0, 0, legend_z - 0.4),
+            z_dir=Vector(0, 0, 1),
+            x_dir=Vector(1, 0, 0),
+        )
 
         for entry in legend_entries:
             legend_desc = build_legend_desc(entry)
@@ -153,19 +198,17 @@ def main() -> None:
             print("    Mirroring cap/stem...")
             # Mirror cap and stem BEFORE boolean operations so legend aligns correctly
             working_cap: Part
-            working_stem: Part
+            working_stem: Part | None = None
             if entry.mirror_x:
                 working_cap = mirror(cap, Plane.YZ)  # type: ignore[assignment]
-                working_stem = mirror(choc_stem, Plane.YZ)  # type: ignore[assignment]
+                if choc_stem is not None:
+                    working_stem = mirror(choc_stem, Plane.YZ)  # type: ignore[assignment]
             else:
                 working_cap = cap
                 working_stem = choc_stem
-            working_stem.color = Color("gray")
-            working_stem.label = "stem"
-
-            text_pln: Plane = Plane(
-                origin=pln.origin - n * 0.4, z_dir=pln.z_dir, x_dir=pln.x_dir
-            )
+            if working_stem is not None:
+                working_stem.color = Color("gray")
+                working_stem.label = "stem"
 
             text_solid: Part | None = None
 
@@ -173,19 +216,19 @@ def main() -> None:
             if entry.primary and entry.secondary:
                 # Both legends - offset and position as a group
                 total_height = (
-                    settings.primary_font_size
-                    + settings.legend_gap
-                    + settings.secondary_font_size
+                        settings.primary_font_size
+                        + settings.legend_gap
+                        + settings.secondary_font_size
                 )
                 primary_offset = (
-                    -total_height / 2
-                    + settings.primary_font_size / 2
-                    + settings.vertical_shift
+                        -total_height / 2
+                        + settings.primary_font_size / 2
+                        + settings.vertical_shift
                 )
                 secondary_offset = (
-                    total_height / 2
-                    - settings.secondary_font_size / 2
-                    + settings.vertical_shift
+                        total_height / 2
+                        - settings.secondary_font_size / 2
+                        + settings.vertical_shift
                 )
 
                 print("    Creating primary text...")
@@ -233,7 +276,7 @@ def main() -> None:
                     print("    Creating tertiary text...")
                     tertiary_pln = Plane(
                         origin=text_pln.origin
-                        + text_pln.x_dir * settings.tertiary_x_offset,
+                               + text_pln.x_dir * settings.tertiary_x_offset,
                         z_dir=text_pln.z_dir,
                         x_dir=text_pln.x_dir,
                     )
@@ -302,17 +345,21 @@ def main() -> None:
             legend.label = "legend"
 
             try:
-                show([hole_cap, legend, working_stem])
+                shapes_to_show = [hole_cap, legend]
+                if working_stem is not None:
+                    shapes_to_show.append(working_stem)
+                show(shapes_to_show)
                 print("    Meshing shapes...")
                 m: Mesher = Mesher(unit=Unit.MM)
                 m.add_shape(hole_cap, linear_deflection=0.06, angular_deflection=0.3)
                 print("    Meshed hole_cap")
                 m.add_shape(legend, linear_deflection=0.01, angular_deflection=0.05)
                 print("    Meshed legend")
-                m.add_shape(
-                    working_stem, linear_deflection=0.06, angular_deflection=0.3
-                )
-                print("    Meshed stem")
+                if working_stem is not None:
+                    m.add_shape(
+                        working_stem, linear_deflection=0.06, angular_deflection=0.3
+                    )
+                    print("    Meshed stem")
                 filename = build_filename(entry, row_name)
                 m.write(filename)
             except RuntimeError as e:
