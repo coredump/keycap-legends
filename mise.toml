@@ -1,3 +1,5 @@
 [tools]
-uv = "latest"
-watchexec = "latest"
+node = "25"
+uv = "0.10"
+watchexec = "2.3"
+python = "3.12"
