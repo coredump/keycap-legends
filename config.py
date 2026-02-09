@@ -33,6 +33,7 @@ def load_config(path: Path | str = "config.toml") -> Config:
             step_files[name] = StepFileConfig(
                 path=step_data["path"],
                 rotation=step_data.get("rotation", 0),
+                has_stem=step_data.get("has_stem", False),
             )
 
     # Parse legends
