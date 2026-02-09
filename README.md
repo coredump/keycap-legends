@@ -131,6 +131,13 @@ ONLY_ROWS = ["row_2"]  # Process only row_2
 ONLY_ROWS = ["thumb_mid", "thumb_corners"]  # Process only thumb keys
 ```
 
+## Mise Commands Reference
+
+```bash
+mise run run      # Generate keycaps (equivalent to `uv run main.py`)
+mise run run_ocp  # Launch OCP-VSCode standalone viewer
+```
+
 ## uv Commands Reference
 
 ```bash
@@ -163,7 +170,8 @@ tertiary_x_offset = -5.0    # Tertiary position (negative = left)
 ```toml
 [step_files.row_2]
 path = "assets/1u_row_2.step"
-rotation = 0  # Optional, degrees
+rotation = 0    # Optional, degrees
+has_stem = true # Optional, skip stem generation if STEP already has stem
 ```
 
 ### Legend Entries
@@ -202,10 +210,12 @@ Contradiction" keycap set.
 
 **It should be generic enough to work with other keycap STEP files**, but:
 
-1. The STEP file should be a solid keycap body (without stem)
-2. The largest bottom face is used for stem and legend placement
-3. You may need to adjust rotation in `STEP_FILES`
-4. Font sizes and positioning may need tuning
+1. The STEP file should be a solid keycap body (with or without stem)
+2. The largest bottom face is used for **stem plane** positioning
+3. Legend placement is automatic - it finds the lowest point on the top surface near the center (works for concave, convex, and flat keycaps)
+4. If your STEP file already includes a stem, set `has_stem = true` to skip stem generation
+5. You may need to adjust rotation in config
+6. Font sizes and positioning may need tuning
 
 **The author can't provide much support for custom STEP files** - you're on your own for debugging CAD geometry issues.
 Good luck!

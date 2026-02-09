@@ -38,8 +38,8 @@ from utils.mesher_patch import apply_mesher_triangulation_none_guard
 # Examples:
 #   ONLY_ROWS = None                           # Process all rows
 #   ONLY_ROWS = ["row_2"]                      # Process only row_2
-ONLY_ROWS = ["thumb_mid", "thumb_corners"]  # Process only thumb keys
-# ONLY_ROWS: list[str] | None = None
+# ONLY_ROWS = ["thumb_mid", "thumb_corners"]  # Process only thumb keys
+ONLY_ROWS: list[str] | None = None
 # =============================================================================
 
 # Characters that need safe filenames
@@ -58,7 +58,7 @@ FILENAME_MAP: dict[str, str] = {
 
 def build_choc_stem() -> Part:
     """Build the Kailh Choc stem geometry."""
-    # Cross is used for alignment reference only, not included in final stem
+    # Cross is used for alignment reference only, not included in the final stem
     stem: Part = Box(1.3, 3, 3.1, align=(Align.CENTER, Align.CENTER, Align.MAX)) - [
         Pos(3.9, 0),
         Pos(-3.9, 0),
@@ -108,7 +108,7 @@ def find_legend_plane_z(cap: Part, bbox: BoundBox) -> float:
     cap_bottom_z = bbox.min.Z
     cap_height = cap_top_z - cap_bottom_z
 
-    # Only consider upper portion (top 60%)
+    # Only consider the upper portion (top 60%)
     z_threshold = cap_bottom_z + cap_height * 0.4
     center_radius = 3.0  # mm
 
@@ -139,7 +139,7 @@ def main() -> None:
     choc_stem_base: Part = build_choc_stem()
 
     for row_name, legend_entries in cfg.legends.items():
-        # Skip rows not in ONLY_ROWS filter (if set)
+        # Skip rows not in the ONLY_ROWS filter (if set)
         if ONLY_ROWS and row_name not in ONLY_ROWS:
             print(f"Skipping {row_name} (not in ONLY_ROWS)")
             continue
@@ -156,7 +156,7 @@ def main() -> None:
         # Update bbox after repositioning
         bbox = cap.bounding_box()
 
-        # Stem plane: based on largest face (inside bottom of keycap)
+        # Stem plane: based on the largest face (inside bottom of keycap)
         internal_face = max(cap.faces(), key=lambda f: f.area)
         n: Vector = internal_face.normal_at()
         pln: Plane = Plane(
@@ -171,7 +171,7 @@ def main() -> None:
             choc_stem.color = Color("gray")
             choc_stem.label = "stem"
 
-        # Legend plane: based on lowest point of top surface near center
+        # Legend plane: based on the lowest point of the top surface near the center
         legend_z = find_legend_plane_z(cap, bbox)
         text_pln: Plane = Plane(
             origin=Vector(0, 0, legend_z - 0.4),
@@ -196,7 +196,7 @@ def main() -> None:
             tertiary_font = entry.tertiary_font or settings.font
 
             print("    Mirroring cap/stem...")
-            # Mirror cap and stem BEFORE boolean operations so legend aligns correctly
+            # Mirror cap and stem BEFORE boolean operations, so legend aligns correctly
             working_cap: Part
             working_stem: Part | None = None
             if entry.mirror_x:
