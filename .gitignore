@@ -1,4 +1,4 @@
-assets/*.FC*
+assets/**/*.FC*
 .serena
 .claude
 .idea

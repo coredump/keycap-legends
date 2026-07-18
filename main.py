@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MIT
 
+from pathlib import Path
+
 from build123d import (
     Align,
     Axis,
@@ -29,6 +31,7 @@ from ocp_vscode import Camera, set_defaults, show
 from config import load_config
 from models import LegendEntry
 from utils.mesher_patch import apply_mesher_triangulation_none_guard
+from utils.stl_to_step import convert_stl_to_step
 
 # =============================================================================
 # DEBUG SETTINGS - Set to filter which rows to process
@@ -148,6 +151,20 @@ def main() -> None:
 
         # Get STEP file config
         step_cfg = cfg.step_files[row_name]
+        if not Path(step_cfg.path).exists():
+            if step_cfg.stl and Path(step_cfg.stl).exists():
+                print(f"  {step_cfg.path} missing - converting from {step_cfg.stl}")
+                try:
+                    convert_stl_to_step(step_cfg.stl, step_cfg.path)
+                except RuntimeError as e:
+                    print(f"  SKIPPING {row_name}: STL conversion failed: {e}")
+                    continue
+            else:
+                print(
+                    f"  SKIPPING {row_name}: {step_cfg.path} missing "
+                    "and no STL fallback"
+                )
+                continue
         cap: Part = import_step(step_cfg.path)  # type: ignore[assignment]
         if step_cfg.rotation != 0:
             cap = Rot(0, 0, step_cfg.rotation) * cap
@@ -339,25 +356,39 @@ def main() -> None:
             legend: Part | Solid = working_cap & text_solid  # type: ignore[operator]
             print("    Legend created")
 
-            hole_cap.color = Color("gray")
-            hole_cap.label = "cap body"
-            legend.color = Color("black")
-            legend.label = "legend"
+            # Mesher exports one 3MF object per solid and reads label/color
+            # from each solid - booleans and mirror() return compounds, so
+            # stamp every solid or parts come out unnamed and uncolored
+            hole_solids: list[Solid] = list(hole_cap.solids())
+            legend_solids: list[Solid] = list(legend.solids())
+            for s in hole_solids:
+                s.color = Color("gray")
+                s.label = "cap body"
+            for s in legend_solids:
+                s.color = Color("black")
+                s.label = "legend"
+            if not legend_solids:
+                print(f"    WARNING: legend '{legend_desc}' is empty - blank cap!")
+            stem_solids: list[Solid] = []
+            if working_stem is not None:
+                stem_solids = list(working_stem.solids())
+                for s in stem_solids:
+                    s.color = Color("gray")
+                    s.label = "stem"
 
             try:
-                shapes_to_show = [hole_cap, legend]
-                if working_stem is not None:
-                    shapes_to_show.append(working_stem)
-                show(shapes_to_show)
+                show([*hole_solids, *legend_solids, *stem_solids])
                 print("    Meshing shapes...")
                 m: Mesher = Mesher(unit=Unit.MM)
-                m.add_shape(hole_cap, linear_deflection=0.06, angular_deflection=0.3)
+                m.add_shape(hole_solids, linear_deflection=0.06, angular_deflection=0.3)
                 print("    Meshed hole_cap")
-                m.add_shape(legend, linear_deflection=0.01, angular_deflection=0.05)
+                m.add_shape(
+                    legend_solids, linear_deflection=0.01, angular_deflection=0.05
+                )
                 print("    Meshed legend")
-                if working_stem is not None:
+                if stem_solids:
                     m.add_shape(
-                        working_stem, linear_deflection=0.06, angular_deflection=0.3
+                        stem_solids, linear_deflection=0.06, angular_deflection=0.3
                     )
                     print("    Meshed stem")
                 filename = build_filename(entry, row_name)

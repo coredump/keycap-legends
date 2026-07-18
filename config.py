@@ -34,6 +34,7 @@ def load_config(path: Path | str = "config.toml") -> Config:
                 path=step_data["path"],
                 rotation=step_data.get("rotation", 0),
                 has_stem=step_data.get("has_stem", False),
+                stl=step_data.get("stl"),
             )
 
     # Parse legends

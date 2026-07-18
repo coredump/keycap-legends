@@ -10,7 +10,11 @@ from OCP.BRep import BRep_Tool
 from OCP.BRepMesh import BRepMesh_IncrementalMesh
 from OCP.TopLoc import TopLoc_Location
 
-TOLERANCE = 1e-6
+# Vertex merge grid for 3MF export. 0.1um: far below print resolution but
+# coarse enough to collapse micro-butterflies left by booleans against
+# stem-in-mesh geometry (1e-6 leaves them non-manifold and lib3mf rejects
+# the mesh).
+TOLERANCE = 1e-4
 
 
 def _find_boundary_loops(triangles_indices):
@@ -160,11 +164,87 @@ def apply_mesher_triangulation_none_guard():
             if mapped_a != mapped_b and mapped_b != mapped_c and mapped_c != mapped_a:
                 triangles_indices.append((mapped_a, mapped_b, mapped_c))
 
+        # Remove fin pairs: coincident faces (e.g. baked-in stems touching
+        # the cap interior) merge into duplicated triangles - zero-volume
+        # fins that make the mesh non-manifold. Drop them pairwise; an odd
+        # count keeps one triangle (it is a real surface face).
+        fin_groups = defaultdict(list)
+        for tri in triangles_indices:
+            fin_groups[frozenset(tri)].append(tri)
+        triangles_indices = [
+            group[0] for group in fin_groups.values() if len(group) % 2 == 1
+        ]
+
         # Fill boundary holes
         loops = _find_boundary_loops(triangles_indices)
         for loop in loops:
             fill_tris = _fill_loop_with_fan(loop)
             triangles_indices.extend(fill_tris)
+
+        # Split pinch (non-manifold) edges: boolean cuts grazing facet edges
+        # can leave an edge shared by 4 triangles (2 per direction - an
+        # hourglass pinch), which lib3mf rejects. Repair by vertex-fan
+        # splitting: at each pinch vertex, group incident triangles into
+        # sheets connected only through manifold (2-triangle) edges, and give
+        # every sheet beyond the first its own copy of the vertex. Whole
+        # sheets are rewired together, so no boundary edges are created and
+        # coordinates are unchanged.
+        positions = list(vertex_to_idx.keys())
+
+        def _edge_counts():
+            counts = defaultdict(int)
+            for tri in triangles_indices:
+                for a, b in ((tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])):
+                    counts[(a, b) if a < b else (b, a)] += 1
+            return counts
+
+        edge_counts = _edge_counts()
+        pinch_vertices = {
+            v for e, n in edge_counts.items() if n > 2 for v in e
+        }
+        for v in sorted(pinch_vertices):
+            incident = [
+                t_idx
+                for t_idx, tri in enumerate(triangles_indices)
+                if v in tri
+            ]
+            # Union-find over incident triangles, connected only through
+            # manifold edges containing v
+            parent = {t: t for t in incident}
+
+            def _find(t):
+                while parent[t] != t:
+                    parent[t] = parent[parent[t]]
+                    t = parent[t]
+                return t
+
+            edge_map = defaultdict(list)
+            for t_idx in incident:
+                for u in triangles_indices[t_idx]:
+                    if u != v:
+                        edge = (v, u) if v < u else (u, v)
+                        if edge_counts[edge] == 2:
+                            edge_map[edge].append(t_idx)
+            for tris_on_edge in edge_map.values():
+                for other in tris_on_edge[1:]:
+                    ra, rb = _find(tris_on_edge[0]), _find(other)
+                    if ra != rb:
+                        parent[rb] = ra
+            sheets = defaultdict(list)
+            for t_idx in incident:
+                sheets[_find(t_idx)].append(t_idx)
+            for sheet in list(sheets.values())[1:]:
+                new_v = len(vertices_3mf)
+                vertices_3mf.append(
+                    Lib3MF.Position((ctypes.c_float * 3)(*positions[v]))
+                )
+                positions.append(positions[v])
+                for t_idx in sheet:
+                    triangles_indices[t_idx] = tuple(
+                        new_v if u == v else u for u in triangles_indices[t_idx]
+                    )
+            if len(sheets) > 1:
+                edge_counts = _edge_counts()
 
         triangles_3mf = [Lib3MF.Triangle(c_uint3(*idx)) for idx in triangles_indices]
 

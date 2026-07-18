@@ -5,6 +5,9 @@ description = "Adds legends and choc stems to the subliminal contradiction sculp
 requires-python = ">=3.12"
 dependencies = [
     "build123d>=0.10.0",
+    "networkx>=3.6.1",
+    "scipy>=1.17.0",
+    "trimesh>=4.12.2",
 ]
 
 [dependency-groups]

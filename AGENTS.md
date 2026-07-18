@@ -115,7 +115,10 @@ keycap_legends/
 
 ### Mesher Patch (utils/mesher_patch.py)
 
-Fixes two bugs in build123d's Mesher class:
+Fixes bugs in build123d's Mesher class and repairs mesh artifacts caused by
+stem-in-STEP geometry (STEP files whose stems are baked into the cap body
+produce sub-micron contact artifacts at stem/cap junctions; the tool's own
+generated stems are separate solids and never have these):
 
 1. **Null triangulation** - OCCT's `BRep_Tool.Triangulation_s()` can return `None` for some faces. The patch skips these
    instead of crashing on `NbNodes()`.
@@ -124,6 +127,16 @@ Fixes two bugs in build123d's Mesher class:
     - Detects boundary edges (edges in only one triangle)
     - Traces closed loops
     - Fills with fan triangulation
+
+3. **Vertex merge at 0.1um** (`TOLERANCE = 1e-4`) - collapses micro-butterfly edges left by
+   booleans against faceted stem geometry; far below print resolution.
+
+4. **Fin removal** - coincident faces (baked-in stems touching the cap interior) tessellate
+   into duplicated triangles (zero-volume fins). Dropped pairwise; odd counts keep one.
+
+5. **Pinch-edge splitting** - text cuts grazing facet edges can leave an edge shared by 4
+   triangles (hourglass pinch), which lib3mf rejects. Repaired by vertex-fan splitting:
+   sheets connected only through manifold edges get their own vertex copies.
 
 ## Configuration (config.toml)
 
@@ -145,9 +158,18 @@ tertiary_x_offset = -5.0
 ```toml
 [step_files.row_2]
 path = "assets/1u_row_2.step"
+stl = "assets/1u Row 2.stl"  # Optional, STL source to auto-convert if path is missing
 rotation = 0     # Optional, degrees
 has_stem = true  # Optional, skip stem generation if STEP already has stem
 ```
+
+If `path` does not exist and `stl` is set, the STL is converted to STEP automatically
+(`utils/stl_to_step.py`): vertices are welded to a 1e-4 grid (dropping sliver triangles,
+the defect that made manual FreeCAD conversions OCCT-invalid), then per-triangle faces are
+sewn at tight tolerance → solid → UnifySameDomain refine. The result must pass BRepCheck
+or the conversion raises. Do NOT use FreeCAD's 0.10 sewing tolerance - it collapses small
+fillet triangles and produces invalid solids. To regenerate a STEP from its STL, delete
+the STEP and rerun.
 
 ### Legends
 
