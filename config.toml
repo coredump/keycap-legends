@@ -8,6 +8,10 @@ tertiary_font_size = 5
 legend_gap = 0.0
 vertical_shift = 0.0
 tertiary_x_offset = -5.0
+# Bambu Studio filament slots (1-based) pre-assigned per part in the 3MF
+body_filament = 1
+legend_filament = 2
+stem_filament = 1
 
 # STEP file sources
 # Each entry maps a row name to a path and optional rotation (degrees)

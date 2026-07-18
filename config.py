@@ -22,6 +22,9 @@ def load_config(path: Path | str = "config.toml") -> Config:
         legend_gap=settings_data.get("legend_gap", 0.0),
         vertical_shift=settings_data.get("vertical_shift", 0.0),
         tertiary_x_offset=settings_data.get("tertiary_x_offset", -5.0),
+        body_filament=settings_data.get("body_filament", 1),
+        legend_filament=settings_data.get("legend_filament", 2),
+        stem_filament=settings_data.get("stem_filament", 1),
     )
 
     # Parse step files

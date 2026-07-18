@@ -30,6 +30,7 @@ from ocp_vscode import Camera, set_defaults, show
 
 from config import load_config
 from models import LegendEntry
+from utils.bambu_project import bambuify_3mf
 from utils.mesher_patch import apply_mesher_triangulation_none_guard
 from utils.stl_to_step import convert_stl_to_step
 
@@ -393,6 +394,15 @@ def main() -> None:
                     print("    Meshed stem")
                 filename = build_filename(entry, row_name)
                 m.write(filename)
+                bambuify_3mf(
+                    filename,
+                    {
+                        "cap body": settings.body_filament,
+                        "legend": settings.legend_filament,
+                        "stem": settings.stem_filament,
+                    },
+                )
+                print("    Bambu filament mapping applied")
             except RuntimeError as e:
                 print(f"    ERROR: Failed to create mesh for '{legend_desc}': {e}")
 

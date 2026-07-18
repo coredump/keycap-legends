@@ -72,8 +72,10 @@ keycap_legends/
 ├── config.toml      # User configuration (legends, settings)
 ├── fonts.py         # Utility to list available fonts
 ├── utils/
-│   ├── mesher_patch.py  # Fixes for build123d Mesher bugs
-│   └── safe_mesher.py   # SafeMesher class (alternative)
+│   ├── mesher_patch.py    # Fixes for build123d Mesher bugs
+│   ├── safe_mesher.py     # SafeMesher class (alternative)
+│   ├── stl_to_step.py     # STL to STEP conversion with mesh repair
+│   └── bambu_project.py   # Bambu Studio per-part filament assignment
 ├── assets/          # STEP files for keycap bases
 └── results/         # Generated 3MF output files
 ```
@@ -234,6 +236,15 @@ rotation = 90
 ### Adjust text size
 
 Edit `[settings]` in `config.toml`.
+
+### Bambu Studio filament assignment
+
+Every exported 3MF is post-processed by `utils/bambu_project.py`: the meshes are
+grouped under one assembly object and `Metadata/model_settings.config` assigns each
+part a filament slot (`body_filament`/`legend_filament`/`stem_filament` in
+`[settings]`, defaults 1/2/1). Bambu Studio opens the file with parts named and
+filaments pre-assigned - no per-object filament clicking. Note: saving a Bambu
+project writes a full project 3MF; don't save over the generated files in `results/`.
 
 ### Use custom font for a character
 

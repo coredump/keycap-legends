@@ -37,6 +37,9 @@ class LegendSettings:
     legend_gap: float = 0.0
     vertical_shift: float = 0.0
     tertiary_x_offset: float = -5.0
+    body_filament: int = 1
+    legend_filament: int = 2
+    stem_filament: int = 1
 
 
 @dataclass
