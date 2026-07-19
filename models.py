@@ -13,9 +13,17 @@ class LegendEntry:
     mirror_x: bool = False
     primary_font: str | None = None
     primary_font_size: float | None = None
+    primary_x_offset: float | None = None
+    primary_y_offset: float | None = None
+    secondary_font_size: float | None = None
+    secondary_x_offset: float | None = None
+    secondary_y_offset: float | None = None
     secondary_font: str | None = None
     tertiary: str | None = None
     tertiary_font: str | None = None
+    quaternary: str | None = None
+    quaternary_font: str | None = None
+    quaternary_font_size: float | None = None
 
 
 @dataclass
@@ -39,11 +47,16 @@ class LegendSettings:
     legend_gap: float = 0.0
     vertical_shift: float = 0.0
     tertiary_x_offset: float = -5.0
+    tertiary_y_offset: float = 0.0
+    quaternary_font_size: float = 3.5
+    quaternary_x_offset: float = -3.3
+    quaternary_y_offset: float = -3.3
     secondary_x_offset: float = -3.3
     secondary_y_offset: float = -3.3
     primary_x_offset: float = 0.0
     primary_y_offset: float = 0.0
     bold_offset: float = 0.0
+    max_carve_depth: float = 0.8
     body_filament: int = 1
     legend_filament: int = 2
     stem_filament: int = 1

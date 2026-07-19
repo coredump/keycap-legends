@@ -8,10 +8,11 @@ secondary_x_offset = 3.3  # symbol bottom-right
 primary_x_offset = -2.4  # main legend top-left
 primary_y_offset = 2.4
 secondary_y_offset = -3.3
-tertiary_font_size = 5
+tertiary_font_size = 3.5
 legend_gap = 0.0
 vertical_shift = 0.0
-tertiary_x_offset = -5.0
+tertiary_x_offset = 3.3  # number top-right
+tertiary_y_offset = 3.3
 # Bambu Studio filament slots (1-based) pre-assigned per part in the 3MF
 body_filament = 1
 legend_filament = 2
@@ -56,8 +57,7 @@ stl = "assets/1u Row 4 Left Reachy.stl"
 has_stem = true
 
 [step_files.thumb_mid]
-path = "assets/1u_convex.step"
-stl = "assets/Convex 1.00u.stl"
+path = "assets/1u_convex dots.step"
 has_stem = true
 
 [step_files.thumb_corners]
@@ -76,108 +76,144 @@ has_stem = true
 #   tertiary_font   - font override for tertiary
 
 [[legends.row_2]]
-primary = "Q"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "⎈" # Q -> Control helm
+name = "Q"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "`"
 secondary_font = "Open Gorton"
+secondary_font_size = 6.5  # backtick glyph is tiny, compensate
+tertiary = "1"
+tertiary_font = "Open Gorton"
 
 [[legends.row_2]]
-primary = "W"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "⍵" # W -> omega, own-key
+name = "W"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "\U000f097c"
 secondary_font = "FantasqueSansM Nerd Font Propo"
+tertiary = "2"
+tertiary_font = "Open Gorton"
 
 [[legends.row_2]]
-primary = "E"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "∊" # E -> epsilon, own-key
+name = "E"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "\uedfb"
 secondary_font = "FantasqueSansM Nerd Font Propo"
+tertiary = "3"
+tertiary_font = "Open Gorton"
 
 [[legends.row_2]]
-primary = "R"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "♥" # R -> PETSCII heart
+name = "R"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "\ueacc"
 secondary_font = "FantasqueSansM Nerd Font Propo"
+tertiary = "4"
+tertiary_font = "Open Gorton"
 
 [[legends.row_2]]
-primary = "U"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "∪" # U -> cup, u-shaped
+name = "U"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "{"
 secondary_font = "Open Gorton"
+tertiary = "7"
+tertiary_font = "Open Gorton"
 
 [[legends.row_2]]
-primary = "I"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "⍳" # I -> iota, own-key
+name = "I"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "}"
 secondary_font = "Open Gorton"
+tertiary = "8"
+tertiary_font = "Open Gorton"
 
 [[legends.row_2]]
-primary = "O"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "○" # O -> circle, own-key
+name = "O"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "$"
 secondary_font = "Open Gorton"
+tertiary = "9"
+tertiary_font = "Open Gorton"
 
 [[legends.row_2]]
-primary = "P"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "⍴" # P -> rho, p-like
+name = "P"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "\\"
 secondary_font = "Open Gorton"
+tertiary = "0"
+tertiary_font = "Open Gorton"
 
 [[legends.row_2_reachy]]
-primary = "T"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "⊤" # T -> down tack, own-key
+name = "T"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "|"
 secondary_font = "Open Gorton"
+tertiary = "5"
+tertiary_font = "Open Gorton"
 
 [[legends.row_2_reachy]]
-primary = "Y"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "λ" # Y -> lambda
+name = "Y"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "^"
 secondary_font = "Open Gorton"
+tertiary = "6"
+tertiary_font = "Open Gorton"
 mirror_x = true
 
 [[legends.row_3]]
-primary = "A"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "⍺" # A -> alpha, own-key
+name = "A"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "!"
 secondary_font = "Open Gorton"
 
 [[legends.row_3]]
-primary = "S"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "♠" # S -> spade
+name = "S"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "\uf069"
 secondary_font = "FantasqueSansM Nerd Font Propo"
 
 [[legends.row_3]]
-primary = "D"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "∂" # D -> partial, d-like
+name = "D"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "/"
 secondary_font = "Open Gorton"
 
 [[legends.row_3]]
-primary = "K"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "✦" # K -> Hyper bucky
+name = "K"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = ")"
 secondary_font = "Open Gorton"
 
 [[legends.row_3]]
-primary = "L"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "⎕" # L -> APL quad
+name = "L"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "_"
 secondary_font = "Open Gorton"
 
@@ -189,66 +225,75 @@ secondary = "'"
 secondary_font = "Open Gorton"
 
 [[legends.row_3_dots]]
-primary = "F"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "❖" # F -> Super bucky
+name = "F"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "="
 secondary_font = "Open Gorton"
 
 [[legends.row_3_dots]]
-primary = "J"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "♣" # J -> club
+name = "J"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "("
 secondary_font = "Open Gorton"
 
 [[legends.row_3_reachy]]
-primary = "G"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "∇" # G -> del
+name = "G"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "&"
 secondary_font = "Open Gorton"
 
 [[legends.row_3_reachy]]
-primary = "H"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "∆" # H -> delta
+name = "H"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "#"
 secondary_font = "Open Gorton"
 mirror_x = true
 
 [[legends.row_4]]
-primary = "Z"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "♦" # Z -> diamond, PETSCII Z
+name = "Z"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "\U000f0725"
 secondary_font = "FantasqueSansM Nerd Font Propo"
 
 [[legends.row_4]]
-primary = "X"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "⊗" # X -> circled times, x-like
+name = "X"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "+"
 secondary_font = "Open Gorton"
 
 [[legends.row_4]]
-primary = "C"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "⊂" # C -> subset, c-shaped
+name = "C"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "["
 secondary_font = "Open Gorton"
 
 [[legends.row_4]]
-primary = "V"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "∨" # V -> or, v-shaped
+name = "V"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "]"
 secondary_font = "Open Gorton"
 
 [[legends.row_4]]
-primary = "M"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "∞" # M -> infinity
+name = "M"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = ":"
 secondary_font = "Open Gorton"
 
@@ -268,31 +313,35 @@ primary_font = "Open Gorton"
 primary_font_size = 8
 
 [[legends.row_4_reachy]]
-primary = "B"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "♭" # B -> flat, b-shaped
+name = "B"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "\uf295"
 secondary_font = "FantasqueSansM Nerd Font Propo"
 
 [[legends.row_4_reachy]]
-primary = "N"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary = "▞" # N -> PETSCII shade
+name = "N"
+primary_font = "APL386 Unicode"
+primary_font_size = 7
 secondary = "\uf1fa"
 mirror_x = true
 secondary_font = "FantasqueSansM Nerd Font Propo"
 
 [[legends.thumb_mid]]
 primary = "\U000f030d"
-# secondary = "\uf102"
+primary_x_offset = 0
+primary_y_offset = 0
 primary_font = "FantasqueSansM Nerd Font Propo"
-# secondary_font = "FantasqueSansM Nerd Font Propo"
+secondary_font = "FantasqueSansM Nerd Font Propo"
 
 [[legends.thumb_mid]]
 primary = "\U000f0312"
-# secondary = "\uf103"
+primary_x_offset = 0
+primary_y_offset = 0
 primary_font = "FantasqueSansM Nerd Font Propo"
-# secondary_font = "FantasqueSansM Nerd Font Propo"
+secondary_font = "FantasqueSansM Nerd Font Propo"
 
 # Num, left side left key
 [[legends.thumb_corners]]

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 
+import math
 from pathlib import Path
 
 from build123d import (
@@ -47,7 +48,9 @@ from utils.stl_to_step import convert_stl_to_step
 #   ONLY_ROWS = None                           # Process all rows
 #   ONLY_ROWS = ["row_2"]                      # Process only row_2
 # ONLY_ROWS = ["thumb_mid", "thumb_corners"]  # Process only thumb keys
-ONLY_ROWS: list[str] | None = ["row_2_reachy", "row_3_dots", "row_4_reachy"]
+ONLY_ROWS: list[str] | None = None
+# Filter by entry name/primary for fine-grained sampling (e.g. ["Q", "O"])
+ONLY_KEYS: list[str] | None = None
 # =============================================================================
 
 # Characters that need safe filenames
@@ -240,6 +243,9 @@ def main() -> None:
             if not legend_desc:
                 print("  Skipping: no legend specified")
                 continue
+            if ONLY_KEYS and (entry.name or entry.primary) not in ONLY_KEYS:
+                print(f"  Skipping {entry.name or entry.primary} (not in ONLY_KEYS)")
+                continue
 
             print(
                 f"  Creating keycap with legend: {legend_desc}"
@@ -300,7 +306,18 @@ def main() -> None:
                     )
                 sketch = bs.sketch
                 if bold:
-                    sketch = offset(sketch, amount=bold, kind=Kind.ARC)
+                    try:
+                        sketch = offset(sketch, amount=bold, kind=Kind.ARC)
+                    except Exception:
+                        # Some outlines (e.g. zeta's curl) break 2D offset -
+                        # dilate by unioning shifted copies instead
+                        print("    (bold via union dilation)")
+                        base = sketch
+                        for i in range(8):
+                            a = i * math.pi / 4
+                            sketch = sketch + Pos(
+                                bold * math.cos(a), bold * math.sin(a)
+                            ) * base
                 solid = extrude(sketch, amount=6, dir=text_pln.z_dir, both=False)
                 local_z = find_legend_plane_z(
                     working_cap, bbox, footprint=solid.bounding_box()
@@ -312,21 +329,35 @@ def main() -> None:
 
             if entry.primary and entry.secondary:
                 print("    Creating primary text...")
+                px = (
+                    entry.primary_x_offset
+                    if entry.primary_x_offset is not None
+                    else settings.primary_x_offset
+                )
+                py = (
+                    entry.primary_y_offset
+                    if entry.primary_y_offset is not None
+                    else settings.primary_y_offset
+                )
                 text_solid = make_text_piece(
                     entry.primary,
                     primary_font,
                     primary_font_size,
-                    settings.primary_x_offset,
-                    settings.primary_y_offset,
+                    px,
+                    py,
                     settings.bold_offset,
                 )
                 print("    Creating secondary text...")
                 secondary_solid = make_text_piece(
                     entry.secondary,
                     secondary_font,
-                    settings.secondary_font_size,
-                    settings.secondary_x_offset,
-                    settings.secondary_y_offset,
+                    entry.secondary_font_size or settings.secondary_font_size,
+                    entry.secondary_x_offset
+                    if entry.secondary_x_offset is not None
+                    else settings.secondary_x_offset,
+                    entry.secondary_y_offset
+                    if entry.secondary_y_offset is not None
+                    else settings.secondary_y_offset,
                     0.0,
                 )
                 text_solid = text_solid + secondary_solid  # type: ignore[assignment]
@@ -338,7 +369,7 @@ def main() -> None:
                         tertiary_font,
                         settings.tertiary_font_size,
                         settings.tertiary_x_offset,
-                        0.0,
+                        settings.tertiary_y_offset,
                         0.0,
                     )
                     text_solid = text_solid + tertiary_solid  # type: ignore[assignment]
@@ -365,31 +396,72 @@ def main() -> None:
                     0.0,
                 )
 
-            print("    Boolean subtract (hole_cap)...")
-            hole_cap: Part | Solid = working_cap - text_solid  # type: ignore[operator]
-            cut_solids = (
-                list(hole_cap)
-                if isinstance(hole_cap, ShapeList)
-                else list(hole_cap.solids())
-            )
-            if not cut_solids:
-                print("    Empty subtract - retrying with fuzzy boolean...")
-                fuzzy = fuzzy_boolean(working_cap, text_solid, cut=True)
-                cut_solids = list(fuzzy.solids()) if fuzzy is not None else []
-            if not cut_solids:
-                print(f"    ERROR: subtract failed for '{legend_desc}' - skipping")
-                continue
-            hole_cap = max(cut_solids, key=lambda s: s.volume)
+            if entry.quaternary and text_solid is not None:
+                print("    Creating quaternary text...")
+                quaternary_solid = make_text_piece(
+                    entry.quaternary,
+                    entry.quaternary_font or settings.font,
+                    entry.quaternary_font_size or settings.quaternary_font_size,
+                    settings.quaternary_x_offset,
+                    settings.quaternary_y_offset,
+                    0.0,
+                )
+                text_solid = text_solid + quaternary_solid  # type: ignore[assignment]
 
-            print("    Boolean intersect (legend)...")
-            # Use intersection instead of subtraction - much faster
-            legend: Part | Solid = working_cap & text_solid  # type: ignore[operator]
-            if legend is None or not list(legend.solids()):
-                print("    Empty intersect - retrying with fuzzy boolean...")
-                legend = fuzzy_boolean(working_cap, text_solid, cut=False)  # type: ignore[assignment]
-            if legend is None or not list(legend.solids()):
-                print(f"    ERROR: intersect failed for '{legend_desc}' - skipping")
+            # Bound the carve depth: subtract a downshifted copy of the cap
+            # so the cut follows the top surface and never goes deeper than
+            # max_carve_depth - enclosed glyph counters (O, @, &) would
+            # otherwise pierce the wall on curved tops and detach as islands
+            print("    Bounding carve depth...")
+            depth_bound = (
+                text_solid - Pos(0, 0, -settings.max_carve_depth) * working_cap
+            )
+            if depth_bound is not None and list(depth_bound.solids()):
+                text_solid = depth_bound  # type: ignore[assignment]
+            else:
+                print("    WARNING: depth bounding failed - using full-depth carve")
+
+            print("    Boolean subtract (hole_cap)...")
+            # Escalating strategies: tangent tool faces can silently break
+            # OCCT booleans; a fuzzy tolerance or a sub-print-resolution
+            # nudge (8um) resolves them
+            cut_solids: list[Solid] = []
+            legend = None
+            for strategy, tool in (
+                ("exact", text_solid),
+                ("nudged", Pos(0.008, 0.008, 0) * text_solid),
+            ):
+                attempt: Part | Solid | None = working_cap - tool  # type: ignore[operator]
+                cut_solids = (
+                    list(attempt)
+                    if isinstance(attempt, ShapeList)
+                    else list(attempt.solids()) if attempt is not None else []
+                )
+                if not cut_solids:
+                    fz = fuzzy_boolean(working_cap, tool, cut=True)
+                    cut_solids = list(fz.solids()) if fz is not None else []
+                if not cut_solids:
+                    continue
+                legend = working_cap & tool  # type: ignore[operator]
+                if legend is None or not list(legend.solids()):
+                    legend = fuzzy_boolean(working_cap, tool, cut=False)
+                if legend is not None and list(legend.solids()):
+                    if strategy != "exact":
+                        print(f"    (used {strategy} boolean strategy)")
+                    break
+                legend = None
+            if not cut_solids or legend is None:
+                print(f"    ERROR: booleans failed for '{legend_desc}' - skipping")
                 continue
+            hole_cap: Part | Solid = max(cut_solids, key=lambda s: s.volume)
+            dropped = [s for s in cut_solids if s is not hole_cap]
+            if dropped:
+                vols = [round(s.volume, 3) for s in dropped]
+                print(
+                    f"    WARNING: dropped {len(dropped)} island solids {vols} "
+                    f"for '{legend_desc}' - possible hole in a glyph counter!"
+                )
+
             print("    Legend created")
 
             # Mesher exports one 3MF object per solid and reads label/color
