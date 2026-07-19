@@ -15,16 +15,20 @@ Extended context for AI assistants working on this project.
 - Use type annotations (Python 3.12 supports `str | None` and `list[str]` natively)
 - Add `# type: ignore[assignment]` for build123d API mismatches (returns Compound, not Part)
 - Use dataclasses for structured configuration (see models.py)
-- Use FontStyle.BOLD for legend text
+- Legend text renders in the font's regular weight; boldness comes from `bold_offset`
+  (mechanical outline offset) - `FontStyle` is intentionally not used
 
 ### Common Pitfalls to Avoid
 
 1. **Mirror timing**: Always mirror cap/stem BEFORE boolean operations, not after
 2. **Plane rotation**: Use fixed `x_dir=Vector(1, 0, 0)` to prevent legend rotating with cap
 3. **Legend extraction**: Use intersection (`&`) not subtraction for extracting legend solid
-4. **Filtering solids**: Use `max()` by volume for hole_cap (largest), but boolean results may be ShapeList or Solid
+4. **Filtering solids**: Use `max()` by volume for hole_cap (largest), but boolean results may be ShapeList or Solid;
+   dropped extra solids trigger the island WARNING (a glyph counter detached = hole in the cap)
 5. **Two separate planes**: Stem plane (from largest bottom face) and legend plane (from `find_legend_plane_z()`) are
-   independent - don't conflate them
+   independent - don't conflate them. The row-level legend plane (lowest surface point within 3mm of center) is only a
+   starting point: each legend piece is re-anchored to the lowest surface point under its OWN footprint by
+   `make_text_piece()`, and the carve is bounded to `max_carve_depth` following the surface
 
 ### When Modifying Configuration
 
@@ -91,7 +95,8 @@ offset (e.g. zeta).
 
 This project generates 3D-printable keycaps with:
 
-1. **Text legends** - Characters carved into the keycap top surface (primary, secondary, and optional tertiary)
+1. **Text legends** - Characters carved into the keycap top surface (up to four slots: primary, secondary, tertiary,
+   quaternary - one per cap corner)
 2. **Kailh Choc stems** - Low-profile switch mount geometry
 
 Input: STEP files of keycap shells (from FreeCAD)
@@ -120,9 +125,9 @@ keycap_legends/
 ### Module Responsibilities
 
 - **models.py**: Dataclasses for type-safe configuration
-    - `LegendEntry` - single legend configuration
-    - `StepFileConfig` - STEP file path, rotation, and `has_stem` flag
-    - `LegendSettings` - font sizes, gaps, offsets
+    - `LegendEntry` - single legend configuration (glyphs, per-slot font/size/offset overrides, `name`)
+    - `StepFileConfig` - STEP file path, optional `stl` source, rotation, and `has_stem` flag
+    - `LegendSettings` - slot sizes and offsets, bold/carve parameters, filament slots
     - `Config` - complete configuration container
 
 - **config.py**: Loads and parses `config.toml` into dataclasses
@@ -130,25 +135,36 @@ keycap_legends/
 - **main.py**: Processing logic
     - `build_choc_stem()` - creates stem geometry
     - `build_legend_desc()` - generates description string
-    - `build_filename()` - creates safe output filename
-    - `find_legend_plane_z()` - finds Z coordinate for legend placement (lowest point on top surface near center)
+    - `build_filename()` - creates safe output filename (prefers `entry.name`)
+    - `find_legend_plane_z()` - Z for legend placement: lowest top-surface point near center, or within a given
+      footprint bbox (used for per-piece re-anchoring)
+    - `fuzzy_boolean()` - OCCT boolean with fuzzy tolerance, fallback for silently-failing exact booleans
+    - `make_text_piece()` (nested in `main()`) - builds one legend piece: sketch, optional bold offset (with union-
+      dilation fallback), extrude, anchor to local surface
     - `main()` - entry point, orchestrates generation
+
+- **utils/stl_to_step.py**: STL to STEP conversion with trimesh mesh repair
+- **utils/bambu_project.py**: post-processes 3MFs into Bambu projects with per-part filament assignment
+- **utils/mesher_patch.py**: build123d Mesher fixes + mesh-level artifact repair (see below)
 
 ### main.py Workflow
 
 1. Load configuration from `config.toml`
 2. Build Choc stem geometry once
-3. For each row in legends:
-    - Load STEP file and apply rotation
-    - Center at origin
+3. For each row in legends (filtered by `ONLY_ROWS`):
+    - If the STEP is missing and `stl` is set, auto-convert via `utils/stl_to_step.py` (skip row on failure)
+    - Load STEP file and apply rotation, center at origin
     - Find **stem plane**: largest bottom face (for Choc stem positioning)
-    - Find **legend plane**: lowest point on top surface near center (via `find_legend_plane_z()`)
+    - Find row-level **legend plane**: lowest point on top surface near center (via `find_legend_plane_z()`)
     - Create Choc stem if `has_stem = false` (default)
-4. For each legend entry:
+4. For each legend entry (filtered by `ONLY_KEYS`):
     - Mirror cap/stem if needed (BEFORE boolean ops)
-    - Create text solids on legend plane
-    - Boolean subtract/intersect
-    - Export as 3MF (stem omitted if `has_stem = true`)
+    - Build each legend piece via `make_text_piece()`: sketch at its slot offset, optional bold offset
+      (union-dilation fallback), extrude 6mm, re-anchor to the lowest surface point under its own footprint
+    - Bound the carve to `max_carve_depth` (subtract a downshifted cap copy - keeps counters attached)
+    - Booleans with escalating strategies: exact → fuzzy(1e-5) → 8µm nudge → nudged+fuzzy;
+      failures skip the cap, dropped island solids print a WARNING (hole tripwire)
+    - Export as 3MF (stem omitted if `has_stem = true`), then `bambuify_3mf()` assigns Bambu filament slots
 
 ### Mesher Patch (utils/mesher_patch.py)
 
@@ -179,16 +195,10 @@ generated stems are separate solids and never have these):
 
 ### Settings
 
-```toml
-[settings]
-font = "Rajdhani"
-primary_font_size = 8
-secondary_font_size = 6
-tertiary_font_size = 5
-legend_gap = 0.0
-vertical_shift = 0.0
-tertiary_x_offset = -5.0
-```
+See README "Configuration" for the full commented reference. Summary: per-slot
+`*_font_size` and `*_x/y_offset` for the four slots (primary/secondary/tertiary/
+quaternary), `bold_offset` (mechanical bold, 0 = off), `max_carve_depth` (surface-
+following carve bound), and `body/legend/stem_filament` Bambu slots.
 
 ### STEP Files
 
@@ -201,21 +211,28 @@ has_stem = true  # Optional, skip stem generation if STEP already has stem
 ```
 
 If `path` does not exist and `stl` is set, the STL is converted to STEP automatically
-(`utils/stl_to_step.py`): vertices are welded to a 1e-4 grid (dropping sliver triangles,
-the defect that made manual FreeCAD conversions OCCT-invalid), then per-triangle faces are
-sewn at tight tolerance → solid → UnifySameDomain refine. The result must pass BRepCheck
-or the conversion raises. Do NOT use FreeCAD's 0.10 sewing tolerance - it collapses small
-fillet triangles and produces invalid solids. To regenerate a STEP from its STL, delete
-the STEP and rerun.
+(`utils/stl_to_step.py`). The mesh is repaired first with trimesh - vertex merge
+(0.1µm grid), short-edge collapse (union-find, <0.1µm), degenerate/duplicate face
+removal, largest-component selection (drops debris bodies), hole filling, normal fixing -
+then per-triangle faces are sewn at tight tolerance → solid → UnifySameDomain refine.
+The result must be watertight and pass BRepCheck or the conversion raises. Do NOT use
+FreeCAD's 0.10 sewing tolerance - it collapses small fillet triangles and produces
+invalid solids. To regenerate a STEP from its STL, delete the STEP and rerun.
 
 ### Legends
 
 ```toml
 [[legends.row_2]]
-primary = "q"
+primary = "⎈"               # any Unicode glyph; astral planes via "\U000109XX" escapes
+name = "Q"                  # Latin filename identity (required when glyphs can repeat)
+primary_font = "APL386 Unicode"
+primary_font_size = 7       # per-font size compensation
 secondary = "`"
-mirror_x = false
-secondary_font = "FantasqueSansM Nerd Font Propo"
+secondary_font = "Open Gorton"
+secondary_font_size = 6.5   # per-glyph boost (backtick is tiny)
+tertiary = "1"              # number layer digit, top-right
+tertiary_font = "Open Gorton"
+mirror_x = false            # reachy keys
 ```
 
 ## Code Patterns
@@ -231,10 +248,11 @@ result = shape1 & shape2  # Intersection
 # Positioning with Pos
 [Pos(x, y), Pos(x2, y2)] * shape  # Creates copies at positions
 
-# Sketches and extrusion
+# Sketches and extrusion (regular weight; bold comes from offset())
 with BuildSketch(plane) as bs:
-    Text("A", font_size=8, font_style=FontStyle.BOLD)
-solid = extrude(bs.sketch, amount=4, dir=plane.z_dir)
+    Text("A", font_size=8, font="Open Gorton", align=(Align.CENTER, Align.CENTER))
+sketch = offset(bs.sketch, amount=0.15, kind=Kind.ARC)  # mechanical bold
+solid = extrude(sketch, amount=6, dir=plane.z_dir)
 
 # Mirroring (must happen BEFORE boolean ops if legend alignment matters)
 mirrored_cap = mirror(cap, Plane.YZ)
@@ -328,4 +346,7 @@ FILENAME_MAP = {
 }
 ```
 
-Output format: `results/K_{primary}_{secondary}_{row_name}.3mf`
+Output format: `results/K_{name|primary}_{secondary}_{tertiary}_{row_name}.3mf` -
+the primary component uses the entry's `name` field when set (always set for symbol
+sets, keeping filenames Latin and collision-free); secondary/tertiary appear only
+when present.

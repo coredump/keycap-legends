@@ -44,8 +44,6 @@ class LegendSettings:
     primary_font_size: int = 8
     secondary_font_size: float = 6
     tertiary_font_size: int = 5
-    legend_gap: float = 0.0
-    vertical_shift: float = 0.0
     tertiary_x_offset: float = -5.0
     tertiary_y_offset: float = 0.0
     quaternary_font_size: float = 3.5

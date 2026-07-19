@@ -9,8 +9,6 @@ primary_x_offset = -2.4  # main legend top-left
 primary_y_offset = 2.4
 secondary_y_offset = -3.3
 tertiary_font_size = 3.5
-legend_gap = 0.0
-vertical_shift = 0.0
 tertiary_x_offset = 3.3  # number top-right
 tertiary_y_offset = 3.3
 # Bambu Studio filament slots (1-based) pre-assigned per part in the 3MF
