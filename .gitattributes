@@ -1,2 +1,12 @@
+assets/1u_row_3.step filter=lfs diff=lfs merge=lfs -text
+assets/1u_row_3_dots.step filter=lfs diff=lfs merge=lfs -text
+assets/1u_row_3_reachy.step filter=lfs diff=lfs merge=lfs -text
+assets/1u_row_4_reachy.step filter=lfs diff=lfs merge=lfs -text
+assets/1u_row_4.step filter=lfs diff=lfs merge=lfs -text
+assets/1u_convex[[:space:]]dots.step filter=lfs diff=lfs merge=lfs -text
+assets/1u_convex_slanted_right.step filter=lfs diff=lfs merge=lfs -text
+assets/1u_convex.step filter=lfs diff=lfs merge=lfs -text
+assets/1u_row_2_left_reachy.step filter=lfs diff=lfs merge=lfs -text
+assets/1u_row_2.step filter=lfs diff=lfs merge=lfs -text
 assets/*.step filter=lfs diff=lfs merge=lfs -text
 assets/no[[:space:]]stem/*.step filter=lfs diff=lfs merge=lfs -text
