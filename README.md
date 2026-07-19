@@ -4,10 +4,22 @@ Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 
 ![Subliminal Contradiction Keycaps on keyboard](assets/images/hero.jpg)
 
-> **Note:** This project has been vibe coded with [Claude](https://claude.ai) (Anthropic's AI assistant). The code
-> works, but don't expect enterprise-grade polish.
->
-> The included configuration is for a **3x5 split keyboard layout** with symbols based on the author's
+## Personal software
+
+This is personal software. It was built for one person's use, with help from
+an AI coding agent, and put online because someone else might find it useful.
+
+It's not a product. There is no support, no roadmap, no promise it keeps
+working. The level of security is appropriate for how the author uses it. You
+don't need to worry about that on their behalf. The license is the contract.
+Everything else here is context.
+
+If that framing is interesting or annoying, the long version is here:
+[On Personal Software](https://github.com/coredump/personal-software)
+
+If this doesn't suit your needs, don't use it. No hard feelings.
+
+> **Note:** The included configuration is for a **3x5 split keyboard layout** with symbols based on the author's
 > [ZMK keymap](https://github.com/coredump/zmk-config/). You'll likely want to customize `config.toml` for your own
 > layout and preferences.
 >
@@ -16,6 +28,7 @@ Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 
 ## Table of Contents
 
+- [Personal software](#personal-software)
 - [What It Does](#what-it-does)
 - [Acknowledgements](#acknowledgements)
 - [Requirements](#requirements)
