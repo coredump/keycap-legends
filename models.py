@@ -9,8 +9,10 @@ class LegendEntry:
 
     primary: str | None = None
     secondary: str | None = None
+    name: str | None = None
     mirror_x: bool = False
     primary_font: str | None = None
+    primary_font_size: float | None = None
     secondary_font: str | None = None
     tertiary: str | None = None
     tertiary_font: str | None = None
@@ -32,11 +34,16 @@ class LegendSettings:
 
     font: str = "Rajdhani"
     primary_font_size: int = 8
-    secondary_font_size: int = 6
+    secondary_font_size: float = 6
     tertiary_font_size: int = 5
     legend_gap: float = 0.0
     vertical_shift: float = 0.0
     tertiary_x_offset: float = -5.0
+    secondary_x_offset: float = -3.3
+    secondary_y_offset: float = -3.3
+    primary_x_offset: float = 0.0
+    primary_y_offset: float = 0.0
+    bold_offset: float = 0.0
     body_filament: int = 1
     legend_filament: int = 2
     stem_filament: int = 1

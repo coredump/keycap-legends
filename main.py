@@ -9,8 +9,9 @@ from build123d import (
     Box,
     BuildSketch,
     Color,
+    Compound,
     Cylinder,
-    FontStyle,
+    Kind,
     Mesher,
     Part,
     Plane,
@@ -25,7 +26,10 @@ from build123d import (
     fillet,
     import_step,
     mirror,
+    offset,
 )
+from OCP.BRepAlgoAPI import BRepAlgoAPI_Common, BRepAlgoAPI_Cut
+from OCP.TopTools import TopTools_ListOfShape
 from ocp_vscode import Camera, set_defaults, show
 
 from config import load_config
@@ -43,7 +47,7 @@ from utils.stl_to_step import convert_stl_to_step
 #   ONLY_ROWS = None                           # Process all rows
 #   ONLY_ROWS = ["row_2"]                      # Process only row_2
 # ONLY_ROWS = ["thumb_mid", "thumb_corners"]  # Process only thumb keys
-ONLY_ROWS: list[str] | None = None
+ONLY_ROWS: list[str] | None = ["row_2_reachy", "row_3_dots", "row_4_reachy"]
 # =============================================================================
 
 # Characters that need safe filenames
@@ -58,6 +62,27 @@ FILENAME_MAP: dict[str, str] = {
     "*": "asterisk",
     '"': "quote",
 }
+
+
+def fuzzy_boolean(a: Part, b: Part, cut: bool) -> Part | None:
+    """Boolean with fuzzy tolerance - fallback when exact booleans fail.
+
+    OCCT's exact booleans can silently return nothing when tool faces are
+    tangent to the target (e.g. arc-joined offset text). A small fuzzy value
+    merges the near-coincident geometry and lets the operation succeed.
+    """
+    op = BRepAlgoAPI_Cut() if cut else BRepAlgoAPI_Common()
+    args = TopTools_ListOfShape()
+    args.Append(a.wrapped)
+    tools = TopTools_ListOfShape()
+    tools.Append(b.wrapped)
+    op.SetArguments(args)
+    op.SetTools(tools)
+    op.SetFuzzyValue(1e-5)
+    op.Build()
+    if not op.IsDone():
+        return None
+    return Compound(op.Shape())  # type: ignore[return-value]
 
 
 def build_choc_stem() -> Part:
@@ -89,7 +114,9 @@ def build_legend_desc(entry: LegendEntry) -> str | None:
 def build_filename(entry: LegendEntry, row_name: str) -> str:
     """Build a safe filename for the keycap."""
     parts: list[str] = []
-    if entry.primary:
+    if entry.name:
+        parts.append(entry.name)
+    elif entry.primary:
         parts.append(FILENAME_MAP.get(entry.primary, entry.primary))
     if entry.secondary:
         parts.append(FILENAME_MAP.get(entry.secondary, entry.secondary))
@@ -98,15 +125,16 @@ def build_filename(entry: LegendEntry, row_name: str) -> str:
     return f"results/K_{'_'.join(parts)}_{row_name}.3mf"
 
 
-def find_legend_plane_z(cap: Part, bbox: BoundBox) -> float:
+def find_legend_plane_z(
+    cap: Part, bbox: BoundBox, footprint: BoundBox | None = None
+) -> float:
     """Find the Z coordinate for legend placement.
 
-    Returns the minimum Z among vertices that are:
-    1. Near the keycap center (X, Y within radius)
-    2. In the upper portion of the keycap (top 60% by height)
-
-    This ensures legends start below the surface for all keycap profiles
-    (concave, convex, or flat).
+    Returns the minimum Z among top-surface vertices (top 60% by height)
+    within the legend footprint - by default a 3mm radius around center,
+    or the actual text extent when `footprint` is given. On slanted caps
+    the surface keeps dropping toward the edges, so using the real
+    footprint prevents glyph corners from ending up below the text solid.
     """
     cap_top_z = bbox.max.Z
     cap_bottom_z = bbox.min.Z
@@ -114,14 +142,24 @@ def find_legend_plane_z(cap: Part, bbox: BoundBox) -> float:
 
     # Only consider the upper portion (top 60%)
     z_threshold = cap_bottom_z + cap_height * 0.4
-    center_radius = 3.0  # mm
+
+    if footprint is not None:
+        # Clamp away from the side walls so wall vertices don't drag z down
+        margin = 0.3
+        wall_inset = 1.5
+        x_min = max(footprint.min.X - margin, bbox.min.X + wall_inset)
+        x_max = min(footprint.max.X + margin, bbox.max.X - wall_inset)
+        y_min = max(footprint.min.Y - margin, bbox.min.Y + wall_inset)
+        y_max = min(footprint.max.Y + margin, bbox.max.Y - wall_inset)
+    else:
+        x_min = y_min = -3.0
+        x_max = y_max = 3.0
 
     candidate_z_values: list[float] = []
     for vertex in cap.vertices():
         v = vertex.center()
-        if abs(v.X) < center_radius and abs(v.Y) < center_radius:
-            if v.Z > z_threshold:
-                candidate_z_values.append(v.Z)
+        if x_min < v.X < x_max and y_min < v.Y < y_max and v.Z > z_threshold:
+            candidate_z_values.append(v.Z)
 
     if candidate_z_values:
         return min(candidate_z_values)
@@ -210,6 +248,7 @@ def main() -> None:
 
             # Resolve fonts with fallbacks
             primary_font = entry.primary_font or settings.font
+            primary_font_size = entry.primary_font_size or settings.primary_font_size
             secondary_font = entry.secondary_font or primary_font
             tertiary_font = entry.tertiary_font or settings.font
 
@@ -230,131 +269,127 @@ def main() -> None:
 
             text_solid: Part | None = None
 
-            # Handle different legend configurations
+            def make_text_piece(
+                char: str,
+                font: str,
+                size: float,
+                x_off: float,
+                y_off: float,
+                bold: float,
+            ) -> Part:
+                """Build one legend piece anchored to its own local surface.
+
+                Each piece is placed 0.4mm below the lowest surface point
+                under its OWN footprint, keeping the carve depth uniform so
+                enclosed counters (O, @, ...) never pierce the top wall and
+                detach as islands.
+                """
+                pln = Plane(
+                    origin=text_pln.origin
+                    + text_pln.x_dir * x_off
+                    + text_pln.y_dir * y_off,
+                    z_dir=text_pln.z_dir,
+                    x_dir=text_pln.x_dir,
+                )
+                with BuildSketch(pln) as bs:
+                    Text(
+                        char,
+                        font_size=size,
+                        font=font,
+                        align=(Align.CENTER, Align.CENTER),
+                    )
+                sketch = bs.sketch
+                if bold:
+                    sketch = offset(sketch, amount=bold, kind=Kind.ARC)
+                solid = extrude(sketch, amount=6, dir=text_pln.z_dir, both=False)
+                local_z = find_legend_plane_z(
+                    working_cap, bbox, footprint=solid.bounding_box()
+                )
+                dz = local_z - legend_z
+                if abs(dz) > 1e-6:
+                    solid = Pos(0, 0, dz) * solid
+                return solid  # type: ignore[return-value]
+
             if entry.primary and entry.secondary:
-                # Both legends - offset and position as a group
-                total_height = (
-                        settings.primary_font_size
-                        + settings.legend_gap
-                        + settings.secondary_font_size
-                )
-                primary_offset = (
-                        -total_height / 2
-                        + settings.primary_font_size / 2
-                        + settings.vertical_shift
-                )
-                secondary_offset = (
-                        total_height / 2
-                        - settings.secondary_font_size / 2
-                        + settings.vertical_shift
-                )
-
                 print("    Creating primary text...")
-                primary_pln = Plane(
-                    origin=text_pln.origin + text_pln.y_dir * primary_offset,
-                    z_dir=text_pln.z_dir,
-                    x_dir=text_pln.x_dir,
+                text_solid = make_text_piece(
+                    entry.primary,
+                    primary_font,
+                    primary_font_size,
+                    settings.primary_x_offset,
+                    settings.primary_y_offset,
+                    settings.bold_offset,
                 )
-                with BuildSketch(primary_pln) as bs:
-                    Text(
-                        entry.primary,
-                        font_size=settings.primary_font_size,
-                        font=primary_font,
-                        font_style=FontStyle.BOLD,
-                        align=(Align.CENTER, Align.CENTER),
-                    )
-                print("    Extruding primary text...")
-                text_solid = extrude(
-                    bs.sketch, amount=4, dir=text_pln.z_dir, both=False
-                )  # type: ignore[assignment]
-
                 print("    Creating secondary text...")
-                secondary_pln = Plane(
-                    origin=text_pln.origin + text_pln.y_dir * secondary_offset,
-                    z_dir=text_pln.z_dir,
-                    x_dir=text_pln.x_dir,
+                secondary_solid = make_text_piece(
+                    entry.secondary,
+                    secondary_font,
+                    settings.secondary_font_size,
+                    settings.secondary_x_offset,
+                    settings.secondary_y_offset,
+                    0.0,
                 )
-                with BuildSketch(secondary_pln) as bs:
-                    Text(
-                        entry.secondary,
-                        font_size=settings.secondary_font_size,
-                        font=secondary_font,
-                        font_style=FontStyle.BOLD,
-                        align=(Align.CENTER, Align.CENTER),
-                    )
-                print("    Extruding secondary text...")
-                secondary_solid = extrude(
-                    bs.sketch, amount=4, dir=text_pln.z_dir, both=False
-                )
-                print("    Combining text solids...")
                 text_solid = text_solid + secondary_solid  # type: ignore[assignment]
 
-                # Add tertiary legend if specified
                 if entry.tertiary:
                     print("    Creating tertiary text...")
-                    tertiary_pln = Plane(
-                        origin=text_pln.origin
-                               + text_pln.x_dir * settings.tertiary_x_offset,
-                        z_dir=text_pln.z_dir,
-                        x_dir=text_pln.x_dir,
+                    tertiary_solid = make_text_piece(
+                        entry.tertiary,
+                        tertiary_font,
+                        settings.tertiary_font_size,
+                        settings.tertiary_x_offset,
+                        0.0,
+                        0.0,
                     )
-                    with BuildSketch(tertiary_pln) as bs:
-                        Text(
-                            entry.tertiary,
-                            font_size=settings.tertiary_font_size,
-                            font=tertiary_font,
-                            font_style=FontStyle.BOLD,
-                            align=(Align.CENTER, Align.CENTER),
-                        )
-                    print("    Extruding tertiary text...")
-                    tertiary_solid = extrude(
-                        bs.sketch, amount=6, dir=text_pln.z_dir, both=False
-                    )
-                    print("    Combining tertiary text...")
                     text_solid = text_solid + tertiary_solid  # type: ignore[assignment]
 
             elif entry.primary:
-                # Only primary - centered on keycap
                 print("    Creating primary text (centered)...")
-                with BuildSketch(text_pln) as bs:
-                    Text(
-                        entry.primary,
-                        font_size=settings.primary_font_size,
-                        font=primary_font,
-                        align=(Align.CENTER, Align.CENTER),
-                    )
-                print("    Extruding primary text...")
-                text_solid = extrude(
-                    bs.sketch, amount=4, dir=text_pln.z_dir, both=False
-                )  # type: ignore[assignment]
+                text_solid = make_text_piece(
+                    entry.primary,
+                    primary_font,
+                    primary_font_size,
+                    0.0,
+                    0.0,
+                    settings.bold_offset,
+                )
 
             elif entry.secondary:
-                # Only secondary - centered on keycap
                 print("    Creating secondary text (centered)...")
-                with BuildSketch(text_pln) as bs:
-                    Text(
-                        entry.secondary,
-                        font_size=settings.secondary_font_size,
-                        font=secondary_font,
-                        align=(Align.CENTER, Align.CENTER),
-                    )
-                print("    Extruding secondary text...")
-                text_solid = extrude(
-                    bs.sketch, amount=4, dir=text_pln.z_dir, both=False
-                )  # type: ignore[assignment]
+                text_solid = make_text_piece(
+                    entry.secondary,
+                    secondary_font,
+                    settings.secondary_font_size,
+                    0.0,
+                    0.0,
+                    0.0,
+                )
 
             print("    Boolean subtract (hole_cap)...")
             hole_cap: Part | Solid = working_cap - text_solid  # type: ignore[operator]
-            if isinstance(hole_cap, ShapeList):
-                hole_cap = max(hole_cap, key=lambda s: s.volume)
-            else:
-                solids = list(hole_cap.solids())
-                if len(solids) > 1:
-                    hole_cap = max(solids, key=lambda s: s.volume)
+            cut_solids = (
+                list(hole_cap)
+                if isinstance(hole_cap, ShapeList)
+                else list(hole_cap.solids())
+            )
+            if not cut_solids:
+                print("    Empty subtract - retrying with fuzzy boolean...")
+                fuzzy = fuzzy_boolean(working_cap, text_solid, cut=True)
+                cut_solids = list(fuzzy.solids()) if fuzzy is not None else []
+            if not cut_solids:
+                print(f"    ERROR: subtract failed for '{legend_desc}' - skipping")
+                continue
+            hole_cap = max(cut_solids, key=lambda s: s.volume)
 
             print("    Boolean intersect (legend)...")
             # Use intersection instead of subtraction - much faster
             legend: Part | Solid = working_cap & text_solid  # type: ignore[operator]
+            if legend is None or not list(legend.solids()):
+                print("    Empty intersect - retrying with fuzzy boolean...")
+                legend = fuzzy_boolean(working_cap, text_solid, cut=False)  # type: ignore[assignment]
+            if legend is None or not list(legend.solids()):
+                print(f"    ERROR: intersect failed for '{legend_desc}' - skipping")
+                continue
             print("    Legend created")
 
             # Mesher exports one 3MF object per solid and reads label/color
