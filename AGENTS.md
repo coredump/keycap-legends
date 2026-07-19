@@ -33,12 +33,47 @@ Extended context for AI assistants working on this project.
 - Edit `config.py` to handle new TOML fields
 - Nerd Font icons use unicode escapes like `"\uf069"` or `"\U000f0725"` in TOML
 
+### Generating a New Symbol Set or Layout
+
+The proven workflow for changing the board's look (see README "Symbol Set Examples" for
+recipes already validated: Phoenician, Greek, retro-computing):
+
+1. **Map glyphs to keys.** Keep the per-entry `name = "Q"` field as the Latin filename
+   identity - it prevents collisions when two keys share a glyph (e.g. u/w both waw).
+   Design rule the user cares about: a glyph may echo its own key's letter, but must not
+   look like a typeable symbol/letter that lives elsewhere on the keyboard.
+2. **Check font coverage** before anything: `fc-list ':charset=<hex codepoint>' family`.
+   For OCCT specifically, render a test `Text()` and grep stderr for
+   `unable to find font` - OCCT silently falls back to DejaVu Sans when a font lacks the
+   requested style aspect. If a font ships odd name tables (one family for many styles,
+   or missing bold), rewrite them with fontTools (see Code2001/Unscii precedents).
+3. **Compensate sizes per font.** Fonts differ in glyph-height/em; measure with a
+   `BuildSketch` + `Text()` bounding box and set per-entry `primary_font_size` so all
+   caps render at the same physical height (~5.5-6mm for the main slot).
+4. **Pre-flight render.** Draw the whole mapping as 2D sketches into a PNG grid and eyeball
+   it before any CAD - catches font fallbacks, wrong glyphs, and shaping failures (OCCT
+   does no complex text shaping: Devanagari conjuncts, ligatures etc. come out wrong).
+5. **Sample before the full run.** The user ALWAYS wants a small sample first. Use
+   `ONLY_KEYS` in main.py (e.g. `["T","Y","F","J","B","N","O","Q","G"]` covers mirrored
+   caps, homing dots, icons, and counter-bearing glyphs), generate, let the user inspect
+   in Bambu Studio, iterate, and only run the full set on explicit approval.
+6. **Watch the run output.** `WARNING: dropped N island solids` means a glyph counter
+   detached (hole in the cap); `(used ... boolean strategy)` and `(bold via union
+   dilation)` are benign automatic fallbacks. Errors skip the cap and keep going.
+
+Layout is controlled by the four slot offsets in `[settings]` (see README "Legend
+Layout"); per-entry `primary_x/y_offset` / `secondary_x/y_offset` override them (used to
+keep thumb icons centered). `bold_offset` fakes bold for single-weight fonts via outline
+offset, with an automatic union-dilation fallback for outlines that break OCCT's 2D
+offset (e.g. zeta).
+
 ### Testing Changes
 
 - Visual output via ocp-vscode standalone viewer or `show_all()`
 - Check `results/` folder for generated 3MF files
 - Meshing errors are caught and logged, script continues to next legend
 - Use `ONLY_ROWS` in main.py to process specific rows only (e.g., `ONLY_ROWS = ["thumb_mid"]`)
+- Use `ONLY_KEYS` in main.py to process specific keys by name (e.g., `ONLY_KEYS = ["Q", "O"]`) - preferred for samples
 
 ### Font Tips
 

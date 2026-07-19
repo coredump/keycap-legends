@@ -23,6 +23,8 @@ Generate 3D-printable keycaps with text legends and Kailh Choc stems.
 - [Usage](#usage)
 - [uv Commands Reference](#uv-commands-reference)
 - [Configuration](#configuration)
+- [Legend Layout](#legend-layout)
+- [Symbol Set Examples](#symbol-set-examples)
 - [Preparing STEP Files with FreeCAD](#preparing-step-files-with-freecad)
 - [Using Your Own STEP Files](#using-your-own-step-files)
 - [Tips](#tips)
@@ -158,11 +160,22 @@ Edit `config.toml` to configure legends and settings. No Python knowledge requir
 [settings]
 font = "Rajdhani"           # Default font for legends
 primary_font_size = 8       # Main character size (mm)
-secondary_font_size = 6     # Symbol size (mm)
-tertiary_font_size = 5      # Third character size (mm)
-legend_gap = 0.0            # Gap between primary and secondary
-vertical_shift = 0.0        # Shift legend block up/down
-tertiary_x_offset = -5.0    # Tertiary position (negative = left)
+secondary_font_size = 3.5   # Symbol size (mm)
+tertiary_font_size = 3.5    # Third character size (mm)
+quaternary_font_size = 3.5  # Fourth character size (mm)
+primary_x_offset = -2.4     # Main legend position (0,0 = cap center)
+primary_y_offset = 2.4      #   -> top-left
+secondary_x_offset = 3.3    # Symbol position -> bottom-right
+secondary_y_offset = -3.3
+tertiary_x_offset = 3.3     # Third slot -> top-right
+tertiary_y_offset = 3.3
+quaternary_x_offset = -3.3  # Fourth slot -> bottom-left
+quaternary_y_offset = -3.3
+bold_offset = 0.15          # Mechanical bold: outward outline offset (mm), 0 = off
+max_carve_depth = 0.8       # Carve depth bound following the surface (mm)
+body_filament = 1           # Bambu Studio filament slots (1-based)
+legend_filament = 2
+stem_filament = 1
 ```
 
 ### STEP Files
@@ -170,6 +183,7 @@ tertiary_x_offset = -5.0    # Tertiary position (negative = left)
 ```toml
 [step_files.row_2]
 path = "assets/1u_row_2.step"
+stl = "assets/1u Row 2.stl"  # Optional STL source, auto-converted if path missing
 rotation = 0    # Optional, degrees
 has_stem = true # Optional, skip stem generation if STEP already has stem
 ```
@@ -178,14 +192,99 @@ has_stem = true # Optional, skip stem generation if STEP already has stem
 
 ```toml
 [[legends.row_2]]
-primary = "q"
+primary = "\U00010912"      # Any Unicode glyph (TOML \U escape for astral planes)
+name = "Q"                  # Filename identity (avoids collisions for duplicate glyphs)
 secondary = "`"
 mirror_x = false            # Optional, for reachy keys
-primary_font = "Rajdhani"   # Optional override
-secondary_font = "FantasqueSansM Nerd Font Propo"  # Optional override
-tertiary = "1"              # Optional third character
-tertiary_font = "Rajdhani"  # Optional override
+primary_font = "Noto Sans Phoenician"   # Optional overrides, per slot:
+primary_font_size = 8       #   size compensation for fonts with different metrics
+secondary_font = "Open Gorton"
+secondary_font_size = 6.5   #   e.g. tiny glyphs like backtick need a boost
+tertiary = "1"              # Optional third character (e.g. number layer)
+tertiary_font = "Open Gorton"
+quaternary = "..."          # Optional fourth character
+primary_x_offset = 0        # Optional per-entry position overrides
+primary_y_offset = 0        #   (e.g. keep thumb icons centered)
 ```
+
+## Legend Layout
+
+Each keycap supports up to four legend slots, positioned by (x, y) offsets from the cap
+center (millimeters, +y = away from the typist):
+
+```
++-------------+
+| main   3rd  |     main       primary    - top-left, large
+|             |     3rd        tertiary   - top-right (e.g. number layer)
+|             |     4th        quaternary - bottom-left
+| 4th    sym  |     sym        secondary  - bottom-right (shift symbol)
++-------------+
+```
+
+Every legend piece is independently anchored 0.4mm below the lowest surface point of its
+own footprint, and the carve is bounded to `max_carve_depth` following the surface
+curvature - so slanted/curved caps work and enclosed glyph counters (O, @, &) never
+pierce the top wall. If a generation run prints
+`WARNING: dropped N island solids`, a glyph counter detached - that cap has a hole and
+needs a shallower `max_carve_depth` or a different glyph.
+
+## Symbol Set Examples
+
+Symbol sets that have been generated with this tool, kept here as ready-to-use recipes.
+Each maps the physical key (its Latin `name`) to a glyph + font. Fonts marked * are not
+in typical distro repos - see [Font notes](#font-notes).
+
+### Phoenician (alphabet ancestors)
+
+Straight etymology: each Latin letter shows its Phoenician ancestor. c/g share gimel and
+i/j share yod (historically honest); the five waw descendants (f/u/v/w/y) get distinct
+period letterforms by using different fonts.
+
+| Keys | Glyphs | Font | Size |
+|---|---|---|---|
+| A B C D E G H I J K L M N O P Q R S T W X Z | 𐤀 𐤁 𐤂 𐤃 𐤄 𐤂 𐤇 𐤉 𐤉 𐤊 𐤋 𐤌 𐤍 𐤏 𐤐 𐤒 𐤓 𐤔 𐤕 𐤅 𐤎 𐤆 (`\U00010900`-`\U00010915`) | Noto Sans Phoenician | 8 |
+| F | 𐤅 waw, angular form | Quivira* | 11 |
+| U V | 𐤅 waw, curved-Y form | MPH 2B Damase* | 11 |
+| Y | 𐤅 waw, geometric-Y form | Code2001* | 8.5 |
+
+### Greek (with archaic letters)
+
+Lowercase Greek, fully duplicate-free thanks to archaic resurrections: q→ϙ qoppa,
+v→ϝ digamma, j→ϳ yot, c→ϲ lunate sigma, y→ψ.
+
+| Keys | Glyphs | Font | Size |
+|---|---|---|---|
+| A-Z | α β ϲ δ ε φ γ η ι ϳ κ λ μ ν ο π ϙ ρ σ τ υ ϝ ω χ ψ ζ | Noto Sans | 6.5 |
+
+### Retro computing (APL / Space Cadet / PETSCII)
+
+Design rule: a glyph may echo its **own** key (○ on O, ⊤ on T) but must not mimic a
+typeable symbol that lives elsewhere on the board (no ↑ that reads as ^, no ⋆ that
+reads as *).
+
+| Class | Mapping |
+|---|---|
+| APL own-key echoes | A=⍺ E=∊ I=⍳ O=○ P=⍴ T=⊤ U=∪ V=∨ W=⍵ X=⊗ C=⊂ |
+| APL abstracts | G=∇ H=∆ L=⎕ D=∂ |
+| Space Cadet bucky icons | Q=⎈ (Control) F=❖ (Super) K=✦ (Hyper) |
+| PETSCII / card suits | S=♠ R=♥ J=♣ Z=♦ (Z=♦ is the authentic C64 position) N=▞ |
+| Misc | Y=λ (lisp) M=∞ B=♭ (music flat) |
+
+All from a single font: APL386 Unicode* at size 7.
+
+### Font notes
+
+Fonts installed to `~/.local/share/fonts` (not in distro repos):
+
+- **Quivira** - quivira-font.com (freeware)
+- **MPH 2B Damase** - public domain, various mirrors
+- **Code2001** - name table locally rewritten as a Bold instance (OCCT refuses to match
+  fonts without the requested style aspect and silently falls back to DejaVu Sans)
+- **APL386 Unicode** - abrudz.github.io/APL386
+- **Unscii variants** - viznut.fi/unscii; name tables locally rewritten to distinct
+  families (upstream ships all styles under one family name, which OCCT can't select)
+- **Open Gorton** - github.com/dakotafelder/open-gorton (bundled OFL keycap font, used
+  for shift symbols and digits)
 
 ## Preparing STEP Files with FreeCAD
 
