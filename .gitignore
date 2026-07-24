@@ -5,3 +5,4 @@ assets/**/*.FC*
 .envrc
 results/
 **/__pycache__
+mise.toml
