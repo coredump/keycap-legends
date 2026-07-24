@@ -79,8 +79,8 @@ name = "Q"
 primary_font = "APL386 Unicode"
 primary_font_size = 7
 secondary = "`"
-secondary_font = "Open Gorton"
-secondary_font_size = 6.5  # backtick glyph is tiny, compensate
+secondary_font = "APL386 Unicode"  # Gorton backtick too small to read when printed
+secondary_font_size = 6.5
 tertiary = "1"
 tertiary_font = "Open Gorton"
 
@@ -217,10 +217,11 @@ secondary_font = "Open Gorton"
 
 [[legends.row_3]]
 primary = ";"
-primary_font = "Open Gorton"
-primary_font_size = 8
+primary_font = "APL386 Unicode"  # Gorton dot-comma gap fuses under bold_offset
+primary_font_size = 7
 secondary = "'"
-secondary_font = "Open Gorton"
+secondary_font = "APL386 Unicode"
+secondary_font_size = 4.5
 
 [[legends.row_3_dots]]
 primary = "❖" # F -> Super bucky
@@ -293,7 +294,8 @@ name = "M"
 primary_font = "APL386 Unicode"
 primary_font_size = 7
 secondary = ":"
-secondary_font = "Open Gorton"
+secondary_font = "APL386 Unicode"  # Gorton colon dots fuse under bold_offset
+secondary_font_size = 4.5
 
 [[legends.row_4]]
 primary = ","
