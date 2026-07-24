@@ -9,6 +9,7 @@ from build123d import (
     BoundBox,
     Box,
     BuildSketch,
+    Sketch,
     Color,
     Compound,
     Cylinder,
@@ -318,6 +319,10 @@ def main() -> None:
                             sketch = sketch + Pos(
                                 bold * math.cos(a), bold * math.sin(a)
                             ) * base
+                        # complex outlines can degrade the fuse chain into a
+                        # bare ShapeList/Compound - rebuild a proper Sketch so
+                        # extrude() sees clean planar faces
+                        sketch = Sketch(sketch.faces())
                 solid = extrude(sketch, amount=6, dir=text_pln.z_dir, both=False)
                 local_z = find_legend_plane_z(
                     working_cap, bbox, footprint=solid.bounding_box()
@@ -486,6 +491,9 @@ def main() -> None:
 
             try:
                 show([*hole_solids, *legend_solids, *stem_solids])
+            except Exception as e:
+                print(f"    (viewer unavailable, skipping preview: {e})")
+            try:
                 print("    Meshing shapes...")
                 m: Mesher = Mesher(unit=Unit.MM)
                 m.add_shape(hole_solids, linear_deflection=0.06, angular_deflection=0.3)
